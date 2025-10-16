@@ -1,36 +1,23 @@
+# pyright: reportUndefinedVariable=false
+
 import sys
 from sly import Lexer
 
 
 class Scanner(Lexer):
 
-# słowa kluczowe: if, else, for, while
-# słowa kluczowe: break, continue oraz return
-# słowa kluczowe: eye, zeros oraz ones
-# słowa kluczowe: print
-
-# liczby całkowite
-# liczby zmiennoprzecinkowe
-# stringi
-# Dla rozpoznanych leksemów stworzony skaner powinien zwracać:
-# odpowiadający token
-# rozpoznany leksem
-# numer linii
-# Następujące znaki powinny być pomijane:
-# białe znaki: spacje, tabulatory, znaki nowej linii
-# komentarze: komentarze rozpoczynające się znakiem # do znaku końca linii
-
-    tokens = {PLUS, MINUS, TIMES, DIVIDE,
-            L_PARENTHESIS, R_PARENTHESIS, L_SQ_PARENTHESIS, R_SQ_PARENTHESIS, L_CURL_PARENTHESIS, R_CURL_PARENTHESIS,
-            COMMA, COLON, SEMICOLON,
+    tokens = {
             DOT_ADD, DOT_SUB, DOT_MUL, DOT_DIV, TRANSPOSE,
-            EQ, NEQ, BT, BTE, LT, LTE, 
-            ASSIGN, ADD_ASSIGN, SUB_ASSIGN, MUL_ASSIGN, DIV_ASSIGN, 
-            ID, INTNUM}
+            EQ, NEQ, BTE, LTE, 
+            ADD_ASSIGN, SUB_ASSIGN, MUL_ASSIGN, DIV_ASSIGN, 
+            ID, INTNUM,
+            IF, ELSE, FOR, WHILE, BREAK, CONTINUE, RETURN, EYE, ZEROS, ONES, PRINT,
+            FLOATNUM, INTNUM, STRING
+            }
 
-    
     ignore = ' \t'
-    literals = {'+', '-', '*', '/', '(', ')', '[', ']', '{', '}', '\'', ',', ':', ';', '>', '=', '<'}
+    ignore_comments = '\#.*'
+    literals = '+-*/()[]{}\',:;>=<'
 
     #matrixes
     DOT_ADD = r'\.\+'
@@ -45,22 +32,42 @@ class Scanner(Lexer):
     BTE = r'>='
     LTE = r'<='
 
-
     #assign
     ADD_ASSIGN = r'\+='
     SUB_ASSIGN = r'-='
     MUL_ASSIGN = r'\*='
     DIV_ASSIGN = r'/='
 
+    #first is .num, second is num., last is special case of first with 0. 
+    FLOATNUM = r'0?\.[0-9]+((E|e)-?[0-9]+)?|[1-9][0-9]*\.([0-9]+((E|e)-?(0|[1-9][0-9]*))?)?|0\.[0-9]*((E|e)-?[0-9]+)?'
+    INTNUM = r'0|[1-9][0-9]*((E|e)-?(0|[1-9][0-9]*))?'   
+    STRING = r'\"[ -~]*\"|\'[ -~]*\'' #any ascii char in quotaion marks
+    
     #ogolne
     ID = r'[_a-zA-Z][_a-zA-Z0-9]*'
-    # proper_number = r'[1-9][0-9]*|0'
-    INTNUM = fr'[(-)?0(E\+|e)?0]|0'
-
+    
+    #keywords
+    ID['if'] = IF
+    ID['else'] = ELSE
+    ID['for'] = FOR
+    ID['while'] = WHILE 
+    ID['break'] = BREAK 
+    ID['continue'] = CONTINUE 
+    ID['return'] = RETURN 
+    ID['eye'] = EYE 
+    ID['zeros'] = ZEROS
+    ID['ones'] = ONES
+    ID['print'] = PRINT
     
 
-    
-    
+    @_(r'\n+')
+    def newline(self, t):
+        self.lineno += t.value.count('\n')
+
+    def error(self, t):
+        print(f'{'\033[91m'}Line {self.lineno}: Bad character {t.value[0]}{'\033[0m'}')
+        self.index += 1
+
 if __name__ == '__main__':
 
     lexer = Scanner()
