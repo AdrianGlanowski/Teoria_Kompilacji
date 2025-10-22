@@ -7,16 +7,17 @@ from sly import Lexer
 class Scanner(Lexer):
 
     tokens = {
-            DOT_ADD, DOT_SUB, DOT_MUL, DOT_DIV, TRANSPOSE,
-            EQ, NEQ, BTE, LTE, 
-            ADD_ASSIGN, SUB_ASSIGN, MUL_ASSIGN, DIV_ASSIGN, 
+            DOT_ADD, DOT_SUB, DOT_MUL, DOT_DIV,
+            EQ, NEQ, GTE, LTE,
+            ADD_ASSIGN, SUB_ASSIGN, MUL_ASSIGN, DIV_ASSIGN,
+
             ID, INTNUM,
             IF, ELSE, FOR, WHILE, BREAK, CONTINUE, RETURN, EYE, ZEROS, ONES, PRINT,
             FLOATNUM, INTNUM, STRING
             }
 
     ignore = ' \t'
-    ignore_comments = '\#.*'
+    ignore_comment = r'\#.*'
     literals = '+-*/()[]{}\',:;>=<'
 
     #matrixes
@@ -29,7 +30,7 @@ class Scanner(Lexer):
     #relative operators
     EQ = r'=='
     NEQ = r'!='
-    BTE = r'>='
+    GTE = r'>='
     LTE = r'<='
 
     #assign
@@ -38,11 +39,17 @@ class Scanner(Lexer):
     MUL_ASSIGN = r'\*='
     DIV_ASSIGN = r'/='
 
+
+
     #first is .num, second is num., last is special case of first with 0. 
     FLOATNUM = r'0?\.[0-9]+((E|e)-?[0-9]+)?|[1-9][0-9]*\.([0-9]+((E|e)-?(0|[1-9][0-9]*))?)?|0\.[0-9]*((E|e)-?[0-9]+)?'
-    INTNUM = r'0|[1-9][0-9]*((E|e)-?(0|[1-9][0-9]*))?'   
+    INTNUM = r'(0|[1-9][0-9]*)((E|e)\+?(0|[1-9][0-9]*))?'   
     STRING = r'\"[ -~]*\"|\'[ -~]*\'' #any ascii char in quotaion marks
     
+    # FLOATNUM = r'0?\.[0-9]+((E|e)(-|+)?[0-9]+)?|[1-9][0-9]*\.([0-9]+((E|e)(-|+)?(0|[1-9][0-9]*))?)?|0\.[0-9]*((E|e)(-|+)?[0-9]+)?'
+    # INTNUM = r'(0|[1-9][0-9]*)((E|e)+?(0|[1-9][0-9]*))?'
+    # STRING = r'\"[^\"]\"|\'[^\']*\'' #any ascii char in quotaion marks
+
     #ogolne
     ID = r'[_a-zA-Z][_a-zA-Z0-9]*'
     
@@ -61,7 +68,7 @@ class Scanner(Lexer):
     
 
     @_(r'\n+')
-    def newline(self, t):
+    def count_newline(self, t):
         self.lineno += t.value.count('\n')
 
     def error(self, t):
