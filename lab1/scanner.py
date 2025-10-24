@@ -26,7 +26,6 @@ class Scanner(Lexer):
     DOT_MUL = r'\.\*'
     DOT_DIV = r'\.\/'
 
-
     #relative operators
     EQ = r'=='
     NEQ = r'!='
@@ -39,17 +38,11 @@ class Scanner(Lexer):
     MUL_ASSIGN = r'\*='
     DIV_ASSIGN = r'/='
 
-
-
     #first is .num, second is num., last is special case of first with 0. 
     FLOATNUM = r'0?\.[0-9]+((E|e)(-|\+)?[0-9]+)?|[1-9][0-9]*\.([0-9]*((E|e)(-|\+)?(0|[1-9][0-9]*))?)?|0\.[0-9]*((E|e)(-|\+)?[0-9]+)?'
     INTNUM = r'(0|[1-9][0-9]*)((E|e)\+?(0|[1-9][0-9]*))?'   
     STRING = r'\"[^"]*\"|\'[^\']*\'' #any ascii char in quotaion marks
     
-    # FLOATNUM = r'0?\.[0-9]+((E|e)(-|+)?[0-9]+)?|[1-9][0-9]*\.([0-9]+((E|e)(-|+)?(0|[1-9][0-9]*))?)?|0\.[0-9]*((E|e)(-|+)?[0-9]+)?'
-    # INTNUM = r'(0|[1-9][0-9]*)((E|e)+?(0|[1-9][0-9]*))?'
-    # STRING = r'\"[^\"]\"|\'[^\']*\'' #any ascii char in quotaion marks
-
     #ogolne
     ID = r'[_a-zA-Z][_a-zA-Z0-9]*'
     
@@ -66,7 +59,6 @@ class Scanner(Lexer):
     ID['ones'] = ONES
     ID['print'] = PRINT
     
-
     @_(r'\n+')
     def count_newline(self, t):
         self.lineno += t.value.count('\n')
