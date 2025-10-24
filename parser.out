@@ -1,0 +1,272 @@
+Grammar:
+
+Rule 0     S' -> expr
+Rule 1     expr -> INTNUM
+Rule 2     expr -> ( expr )
+Rule 3     expr -> expr / expr  [precedence=left, level=2]
+Rule 4     expr -> expr * expr  [precedence=left, level=2]
+Rule 5     expr -> expr - expr  [precedence=left, level=1]
+Rule 6     expr -> expr + expr  [precedence=left, level=1]
+
+Unused terminals:
+
+    IF
+    RETURN
+    BREAK
+    ID
+    DOT_SUB
+    WHILE
+    DOT_ADD
+    DOT_DIV
+    NEQ
+    ADD_ASSIGN
+    MUL_ASSIGN
+    DIV_ASSIGN
+    SUB_ASSIGN
+    PRINT
+    CONTINUE
+    STRING
+    FLOATNUM
+    ZEROS
+    EQ
+    LTE
+    ONES
+    GTE
+    DOT_MUL
+    ELSE
+    FOR
+    EYE
+
+Terminals, with rules where they appear:
+
+(                    : 2
+)                    : 2
+*                    : 4
++                    : 6
+-                    : 5
+/                    : 3
+ADD_ASSIGN           : 
+BREAK                : 
+CONTINUE             : 
+DIV_ASSIGN           : 
+DOT_ADD              : 
+DOT_DIV              : 
+DOT_MUL              : 
+DOT_SUB              : 
+ELSE                 : 
+EQ                   : 
+EYE                  : 
+FLOATNUM             : 
+FOR                  : 
+GTE                  : 
+ID                   : 
+IF                   : 
+INTNUM               : 1
+LTE                  : 
+MUL_ASSIGN           : 
+NEQ                  : 
+ONES                 : 
+PRINT                : 
+RETURN               : 
+STRING               : 
+SUB_ASSIGN           : 
+WHILE                : 
+ZEROS                : 
+error                : 
+
+Nonterminals, with rules where they appear:
+
+expr                 : 2 3 3 4 4 5 5 6 6 0
+
+
+state 0
+
+    (0) S' -> . expr
+    (1) expr -> . INTNUM
+    (2) expr -> . ( expr )
+    (3) expr -> . expr / expr
+    (4) expr -> . expr * expr
+    (5) expr -> . expr - expr
+    (6) expr -> . expr + expr
+    INTNUM          shift and go to state 2
+    (               shift and go to state 3
+
+    expr                           shift and go to state 1
+
+state 1
+
+    (0) S' -> expr .
+    (3) expr -> expr . / expr
+    (4) expr -> expr . * expr
+    (5) expr -> expr . - expr
+    (6) expr -> expr . + expr
+    /               shift and go to state 4
+    *               shift and go to state 5
+    -               shift and go to state 6
+    +               shift and go to state 7
+
+
+state 2
+
+    (1) expr -> INTNUM .
+    /               reduce using rule 1 (expr -> INTNUM .)
+    *               reduce using rule 1 (expr -> INTNUM .)
+    -               reduce using rule 1 (expr -> INTNUM .)
+    +               reduce using rule 1 (expr -> INTNUM .)
+    $end            reduce using rule 1 (expr -> INTNUM .)
+    )               reduce using rule 1 (expr -> INTNUM .)
+
+
+state 3
+
+    (2) expr -> ( . expr )
+    (1) expr -> . INTNUM
+    (2) expr -> . ( expr )
+    (3) expr -> . expr / expr
+    (4) expr -> . expr * expr
+    (5) expr -> . expr - expr
+    (6) expr -> . expr + expr
+    INTNUM          shift and go to state 2
+    (               shift and go to state 3
+
+    expr                           shift and go to state 8
+
+state 4
+
+    (3) expr -> expr / . expr
+    (1) expr -> . INTNUM
+    (2) expr -> . ( expr )
+    (3) expr -> . expr / expr
+    (4) expr -> . expr * expr
+    (5) expr -> . expr - expr
+    (6) expr -> . expr + expr
+    INTNUM          shift and go to state 2
+    (               shift and go to state 3
+
+    expr                           shift and go to state 9
+
+state 5
+
+    (4) expr -> expr * . expr
+    (1) expr -> . INTNUM
+    (2) expr -> . ( expr )
+    (3) expr -> . expr / expr
+    (4) expr -> . expr * expr
+    (5) expr -> . expr - expr
+    (6) expr -> . expr + expr
+    INTNUM          shift and go to state 2
+    (               shift and go to state 3
+
+    expr                           shift and go to state 10
+
+state 6
+
+    (5) expr -> expr - . expr
+    (1) expr -> . INTNUM
+    (2) expr -> . ( expr )
+    (3) expr -> . expr / expr
+    (4) expr -> . expr * expr
+    (5) expr -> . expr - expr
+    (6) expr -> . expr + expr
+    INTNUM          shift and go to state 2
+    (               shift and go to state 3
+
+    expr                           shift and go to state 11
+
+state 7
+
+    (6) expr -> expr + . expr
+    (1) expr -> . INTNUM
+    (2) expr -> . ( expr )
+    (3) expr -> . expr / expr
+    (4) expr -> . expr * expr
+    (5) expr -> . expr - expr
+    (6) expr -> . expr + expr
+    INTNUM          shift and go to state 2
+    (               shift and go to state 3
+
+    expr                           shift and go to state 12
+
+state 8
+
+    (2) expr -> ( expr . )
+    (3) expr -> expr . / expr
+    (4) expr -> expr . * expr
+    (5) expr -> expr . - expr
+    (6) expr -> expr . + expr
+    )               shift and go to state 13
+    /               shift and go to state 4
+    *               shift and go to state 5
+    -               shift and go to state 6
+    +               shift and go to state 7
+
+
+state 9
+
+    (3) expr -> expr / expr .
+    (3) expr -> expr . / expr
+    (4) expr -> expr . * expr
+    (5) expr -> expr . - expr
+    (6) expr -> expr . + expr
+    /               reduce using rule 3 (expr -> expr / expr .)
+    *               reduce using rule 3 (expr -> expr / expr .)
+    -               reduce using rule 3 (expr -> expr / expr .)
+    +               reduce using rule 3 (expr -> expr / expr .)
+    $end            reduce using rule 3 (expr -> expr / expr .)
+    )               reduce using rule 3 (expr -> expr / expr .)
+
+
+state 10
+
+    (4) expr -> expr * expr .
+    (3) expr -> expr . / expr
+    (4) expr -> expr . * expr
+    (5) expr -> expr . - expr
+    (6) expr -> expr . + expr
+    /               reduce using rule 4 (expr -> expr * expr .)
+    *               reduce using rule 4 (expr -> expr * expr .)
+    -               reduce using rule 4 (expr -> expr * expr .)
+    +               reduce using rule 4 (expr -> expr * expr .)
+    $end            reduce using rule 4 (expr -> expr * expr .)
+    )               reduce using rule 4 (expr -> expr * expr .)
+
+
+state 11
+
+    (5) expr -> expr - expr .
+    (3) expr -> expr . / expr
+    (4) expr -> expr . * expr
+    (5) expr -> expr . - expr
+    (6) expr -> expr . + expr
+    -               reduce using rule 5 (expr -> expr - expr .)
+    +               reduce using rule 5 (expr -> expr - expr .)
+    $end            reduce using rule 5 (expr -> expr - expr .)
+    )               reduce using rule 5 (expr -> expr - expr .)
+    /               shift and go to state 4
+    *               shift and go to state 5
+
+
+state 12
+
+    (6) expr -> expr + expr .
+    (3) expr -> expr . / expr
+    (4) expr -> expr . * expr
+    (5) expr -> expr . - expr
+    (6) expr -> expr . + expr
+    -               reduce using rule 6 (expr -> expr + expr .)
+    +               reduce using rule 6 (expr -> expr + expr .)
+    $end            reduce using rule 6 (expr -> expr + expr .)
+    )               reduce using rule 6 (expr -> expr + expr .)
+    /               shift and go to state 4
+    *               shift and go to state 5
+
+
+state 13
+
+    (2) expr -> ( expr ) .
+    /               reduce using rule 2 (expr -> ( expr ) .)
+    *               reduce using rule 2 (expr -> ( expr ) .)
+    -               reduce using rule 2 (expr -> ( expr ) .)
+    +               reduce using rule 2 (expr -> ( expr ) .)
+    $end            reduce using rule 2 (expr -> ( expr ) .)
+    )               reduce using rule 2 (expr -> ( expr ) .)

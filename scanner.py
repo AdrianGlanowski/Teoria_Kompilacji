@@ -39,13 +39,13 @@ class Scanner(Lexer):
     DIV_ASSIGN = r'/='
 
     #first is .num, second is num., last is special case of first with 0. 
-    FLOATNUM = r'0?\.[0-9]+((E|e)(-|\+)?[0-9]+)?|[1-9][0-9]*\.([0-9]*((E|e)(-|\+)?(0|[1-9][0-9]*))?)?|0\.[0-9]*((E|e)(-|\+)?[0-9]+)?'
-    INTNUM = r'(0|[1-9][0-9]*)((E|e)\+?(0|[1-9][0-9]*))?'   
-    STRING = r'\"[^"]*\"|\'[^\']*\'' #any ascii char in quotaion marks
+    FLOATNUM = r'(0?\.\d+|[1-9]\d*\.|0\.\d*)((E|e)(-|\+)?\d+)?'  
+    INTNUM = r'(0|[1-9]\d*)((E|e)\+?\d+)?'   
+    STRING = r'\"[^"\n]*\"|\'[^\'\n]*\''
     
     #ogolne
     ID = r'[_a-zA-Z][_a-zA-Z0-9]*'
-    
+
     #keywords
     ID['if'] = IF
     ID['else'] = ELSE
