@@ -110,19 +110,6 @@ class Mparser(Parser):
     def if_statement(self, p):
         pass
 
-
-    # @_('IF "(" relative ")" statement ELSE statement')
-    # def if_statement(self, p):
-    #     pass        
-
-    # @_('IF "(" relative ")" "{" statements "}" ELSE if_statement')
-    # def if_statement(self, p):
-    #     pass
-
-    # @_('IF "(" relative ")" "{" statements "}" ELSE "{" statements "}"')
-    # def if_statement(self, p):
-    #     pass
-
     @_('while_statement')
     def statement(self, p):
         pass
@@ -177,14 +164,13 @@ class Mparser(Parser):
     def mul_assign(self, p):
         pass
 
-
     #---------------------------
     #matrix
     @_('matrix "\'"')
     def matrix(self, p):
         pass
     
-    #matrix_style_1
+    #matrix_style_1 -> example2.m
     @_('"[" "]"')
     def matrix(self, p):
         pass
@@ -205,9 +191,7 @@ class Mparser(Parser):
     def rows1(self,p):
         pass
 
-   
-
-    #matrix_style_2
+    #matrix_style_2 -> example.txt
     @_('matrix2')
     def matrix(self, p):
         pass
@@ -224,7 +208,6 @@ class Mparser(Parser):
     def rows2(self,p):
         pass
 
-
     @_('row "," INTNUM')
     def row(self,p):
         pass
@@ -232,7 +215,6 @@ class Mparser(Parser):
     @_('INTNUM')
     def row(self,p):
         pass
-
 
     @_('ZEROS "(" INTNUM ")"')
     def matrix(self, p):
@@ -373,29 +355,4 @@ class Mparser(Parser):
     @_('expr')
     def return_value(self, p):
         pass
-
-    # @_('instructions_opt')
-    # def program(p):
-    #     pass
-
-    # @_('instructions')
-    # def instructions_opt(p):
-    #     pass
-
-    # @_('')
-    # def instructions_opt(p):
-    #     pass
-
-    # @_('instructions instruction')
-    # def instructions(p):
-    #     pass
-
-    # @_('instruction')
-    # def instructions(p):
-    #     pass
-
-    
-
-    # to finish the grammar
-    # ....
 
