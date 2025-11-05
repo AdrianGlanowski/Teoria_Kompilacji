@@ -6,218 +6,254 @@ class Mparser(Parser):
 
     tokens = Scanner.tokens
 
-    debugfile = 'parser.out'
+    debugfile = "parser.out"
 
-    # Zadanie polega na stworzeniu parsera języka do operacji macierzowych. 
-     
+    # Zadanie polega na stworzeniu parsera języka do operacji macierzowych.
+
     # tablice i macierze oraz ich indeksy (ewentualnie zakresy).
-    #customowe bledy w parsingu
+    # customowe bledy w parsingu
     precedence = (
-        ('right', 'ELSE'),
-        ('right', 'MUL_ASSIGN', 'DIV_ASSIGN', 'SUB_ASSIGN', 'ADD_ASSIGN'),
-        ('nonassoc', '<', '>', 'LTE', 'GTE', 'NEQ', 'EQ'),
-        ('left', '+', '-'),
-        ('left', '*', '/'),
-        ('left', 'DOT_ADD', 'DOT_SUB'),
-        ('left', 'DOT_MUL', 'DOT_DIV'),
-        ('right', 'UMINUS'),
-        ('left', "'"),
+        ("right", "ELSE"),
+        ("right", "MUL_ASSIGN", "DIV_ASSIGN", "SUB_ASSIGN", "ADD_ASSIGN"),
+        ("nonassoc", "<", ">", "LTE", "GTE", "NEQ", "EQ"),
+        ("left", "+", "-"),
+        ("left", "*", "/"),
+        ("left", "DOT_ADD", "DOT_SUB"),
+        ("left", "DOT_MUL", "DOT_DIV"),
+        ("right", "UMINUS"),
+        ("left", "'"),
     )
-    
-    #---------------------------
-    #program to ciąg statementow
-    @_('lines')
+
+    # ---------------------------
+    # program to ciąg linijek (lines)
+    @_("lines")
     def program(self, p):
         pass
 
-    #---------------------------
-    #statementy
-    @_('lines line')
-    def lines(self, p):
-        pass
-    
-    @_('line')
+    # ---------------------------
+    # lines
+    @_("lines line")
     def lines(self, p):
         pass
 
-    @_('assign ";"')
+    @_("line")
+    def lines(self, p):
+        pass
+
+    # ---------------------------
+    # line
+    @_('assignment ";"',
+       'statement ";"',
+       'if_statement',
+       'while_statement',
+       'for_statement',)
     def line(self, p):
         pass
 
-    #break dziala wszedzie, a powinien tylko w petli
-    @_('BREAK ";"')
-    def line(self, p):
-        pass
-    #continue dziala wszedzie, a powinien tylko w petli
-    @_('CONTINUE ";"')
+    @_('')
     def line(self, p):
         pass
 
-    @_('RETURN statement_values ";"')
-    def line(self, p):
-        pass
-    
-    @_('add_assign ";"')
-    def line(self, p):
-        pass
+    # ---------------------------
+    # statements
 
-    @_('sub_assign ";"')
-    def line(self, p):
+    # BREAK I CONTINUE DZIALA WSZEDZIE, A POWINIEN TYLKO W PETLI
+    @_('BREAK')
+    def statement(self, p):
         pass
 
-    @_('mul_assign ";"')
-    def line(self, p):
+    @_('CONTINUE')
+    def statement(self, p):
         pass
 
-    @_('div_assign ";"')
-    def line(self, p):
+    @_('RETURN expr')
+    def statement(self, p):
         pass
 
-    @_('matrix_assign ";"')
-    def line(self, p):
+    @_('PRINT expr')
+    def statement(self, p):
         pass
 
-    @_('PRINT statement_values ";"')
-    def line(self, p):
+    # ---------------------------
+    # assignments
+    @_('var "=" expr',
+       'var "=" STRING')
+    def assignment(self, p):
         pass
 
-    @_('if_statement')
-    def line(self, p):
+    @_("var ADD_ASSIGN expr")
+    def assignment(self, p):
         pass
 
-    @_('line',
-       '"{" lines "}"')
-    def block(self, p):
-        pass 
+    @_("var SUB_ASSIGN expr")
+    def assignment(self, p):
+        pass
 
-    #pomysl: osobny if dla petli
-    @_('IF "(" relative ")" block')
+    @_("var MUL_ASSIGN expr")
+    def assignment(self, p):
+        pass
+
+    @_("var DIV_ASSIGN expr")
+    def assignment(self, p):
+        pass
+
+    # ---------------------------
+    # warunki i petle
+    # pomysl: osobny if dla petli
+    @_('IF "(" condition ")" block')
     def if_statement(self, p):
         pass
 
-    @_('if_statement ELSE block')
+    @_("if_statement ELSE block")
     def if_statement(self, p):
-        pass
-    
-    @_('if_statement ELSE if_statement')
-    def if_statement(self, p):
-        pass
-    
-    @_('while_statement')
-    def line(self, p):
         pass
 
-    @_('WHILE "(" relative ")" block')
+    @_("if_statement ELSE if_statement")
+    def if_statement(self, p):
+        pass
+
+    @_('WHILE "(" condition ")" block')
     def while_statement(self, p):
         pass
 
-    @_('for_statement')
-    def line(self, p):
-        pass
-    
-    @_('FOR variable "=" expr ":" expr block')
+    @_('FOR var "=" expr ":" expr block')
     def for_statement(self, p):
         pass
-    
-    #---------------------------
-    #polecenia
-    @_('variable "=" expr')
-    def assign(self, p):
+
+    # ---------------------------
+    # blok
+    @_("line", '"{" lines "}"')
+    def block(self, p):
         pass
 
-    @_('variable "=" STRING')
-    def assign(self, p):
+    # ---------------------------
+    # condition
+    @_('">"', '"<"', "EQ", "NEQ", "GTE", "LTE")
+    def comp_op(self, p):
         pass
 
-    @_('variable ADD_ASSIGN expr')
-    def add_assign(self, p):
+    @_("expr comp_op expr")
+    def condition(self, p):
         pass
 
-    @_('variable SUB_ASSIGN expr')
-    def sub_assign(self, p):
+    # ---------------------------
+    # expressions
+    @_('"-" expr %prec UMINUS')
+    def expr(self, p):
         pass
 
-    @_('variable MUL_ASSIGN expr')
-    def mul_assign(self, p):
+    @_('expr "+" expr')
+    def expr(self, p):
         pass
 
-    @_('variable DIV_ASSIGN expr')
-    def div_assign(self, p):
-        pass
-    
-    @_('ID "[" indexes "]" "=" expr')
-    def matrix_assign(self, p):
+    @_("expr DOT_ADD expr")
+    def expr(self, p):
         pass
 
-    @_('ID "[" index "]" "=" expr')
-    def matrix_assign(self, p):
+    @_('expr "-" expr')
+    def expr(self, p):
         pass
 
-    #---------------------------
-    #matrix
+    @_("expr DOT_SUB expr")
+    def expr(self, p):
+        pass
+
+    @_('expr "*" expr')
+    def expr(self, p):
+        pass
+
+    @_("expr DOT_MUL expr")
+    def expr(self, p):
+        pass
+
+    @_('expr "/" expr')
+    def expr(self, p):
+        pass
+
+    @_("expr DOT_DIV expr")
+    def expr(self, p):
+        pass
+
+    @_('"(" expr ")"')
+    def expr(self, p):
+        pass
+
+    @_("matrix")
+    def expr(self, p):
+        pass
+
+    @_("INTNUM")
+    def expr(self, p):
+        pass
+
+    @_("FLOATNUM")
+    def expr(self, p):
+        pass
+
+    @_("var")
+    def expr(self, p):
+        pass
+
+    # ---------------------------
+    # variable
+    @_("ID")
+    def var(self, p):
+        pass
+
+    # ---------------------------
+    # matrix
     @_('matrix "\'"')
     def matrix(self, p):
         pass
-    
-    @_('INTNUM "," INTNUM')
-    def indexes(self, p):
-        pass
 
-    @_('INTNUM')
-    def index(self, p):
-        pass
-
-    #matrix_style_1 -> example1.m
+    # matrix_style_1 -> example1.m
     @_('"[" "]"')
     def matrix(self, p):
         pass
 
-    @_('matrix1')
+    @_("matrix1")
     def matrix(self, p):
         pass
 
     @_('"[" rows1 "]"')
-    def matrix1(self,p):
+    def matrix1(self, p):
         pass
 
     @_('rows1 ";" row')
-    def rows1(self,p):
+    def rows1(self, p):
         pass
 
-    @_('row')
-    def rows1(self,p):
+    @_("row")
+    def rows1(self, p):
         pass
 
-    #matrix_style_2 -> example.txt
-    @_('matrix2')
+    # matrix_style_2 -> example.txt
+    @_("matrix2")
     def matrix(self, p):
         pass
 
     @_('"[" rows2 "]"')
-    def matrix2(self,p):
+    def matrix2(self, p):
         pass
 
     @_('rows2 "," "[" row "]"')
-    def rows2(self,p):
+    def rows2(self, p):
         pass
 
     @_('"[" row "]"')
-    def rows2(self,p):
+    def rows2(self, p):
         pass
 
-    @_('row "," number')
-    def row(self,p):
+    # rows
+    @_('row "," expr')
+    def row(self, p):
         pass
 
-    @_('number')
-    def row(self,p):
+    @_("expr")
+    def row(self, p):
         pass
 
-    @_('INTNUM',
-       'FLOATNUM')
-    def number(self, p):
-        pass
-    
+    # matrix creation with functions
     @_('ZEROS "(" INTNUM ")"')
     def matrix(self, p):
         pass
@@ -230,88 +266,19 @@ class Mparser(Parser):
     def matrix(self, p):
         pass
 
-    @_('"-" expr %prec UMINUS')
-    def expr(self, p):
+    # matrix assignment
+    @_('matrix_assign ";"')
+    def line(self, p):
         pass
 
-    @_('expr "+" expr')
-    def expr(self, p):
+    @_('var "[" indices "]" "=" expr')
+    def matrix_assign(self, p):
         pass
 
-    @_('expr DOT_ADD expr')
-    def expr(self, p):
+    @_('expr')
+    def indices(self, p):
         pass
 
-    @_('expr "-" expr')
-    def expr(self, p):
+    @_('expr "," indices')
+    def indices(self, p):
         pass
-
-    @_('expr DOT_SUB expr')
-    def expr(self, p):
-        pass
-   
-    @_('expr "*" expr')
-    def expr(self, p):
-        pass
-
-    @_('expr DOT_MUL expr')
-    def expr(self, p):
-        pass
-
-    @_('expr "/" expr')
-    def expr(self, p):
-        pass
-
-    @_('expr DOT_DIV expr')
-    def expr(self, p):
-        pass
-    
-    @_('"(" expr ")"')
-    def expr(self, p):
-        pass
-
-    @_('matrix')
-    def expr(self, p):
-        pass
-
-    @_('number')
-    def expr(self, p):
-        pass
-    
-    @_('variable "\'"')
-    def expr(self, p):
-        pass
-
-    @_('variable')
-    def expr(self, p):
-        pass
-
-    @_('ID')
-    def variable(self, p):
-        pass 
-   
-    #---------------------------
-    #relative
-    @_('">"', '"<"', 'EQ', 'NEQ', 'GTE', 'LTE')
-    def rel_op(self, p):
-        pass
-    @_('expr rel_op expr')
-    def relative(self, p):
-        pass
-
-    #---------------------------
-
-    @_('statement_values "," statement_value')
-    def statement_values(self, p):
-        pass
-    
-    @_('statement_value')
-    def statement_values(self, p):
-        pass
-
-    @_('STRING', 'expr', 'variable')
-    def statement_value(self, p):
-        pass
-
-   
-
