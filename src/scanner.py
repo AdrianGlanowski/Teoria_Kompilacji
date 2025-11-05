@@ -1,5 +1,4 @@
 # pyright: reportUndefinedVariable=false
-
 import sys
 from sly import Lexer
 
@@ -11,9 +10,9 @@ class Scanner(Lexer):
             EQ, NEQ, GTE, LTE,
             ADD_ASSIGN, SUB_ASSIGN, MUL_ASSIGN, DIV_ASSIGN,
 
-            ID, INTNUM,
+            ID, INTNUM, UMINUS,
             IF, ELSE, FOR, WHILE, BREAK, CONTINUE, RETURN, EYE, ZEROS, ONES, PRINT,
-            FLOATNUM, INTNUM, STRING
+            FLOATNUM, INTNUM, STRING, PRINT
             }
 
     ignore = ' \t'
@@ -39,12 +38,10 @@ class Scanner(Lexer):
     DIV_ASSIGN = r'/='
 
     #first is .num, second is num., last is special case of first with 0. 
-    FLOATNUM = r'(0?\.\d+|[1-9]\d*\.|0\.\d*)((E|e)(-|\+)?\d+)?'  
+    FLOATNUM = r'(0?\.\d+|[1-9]\d*\.\d*|0\.\d*)((E|e)(-|\+)?\d+)?'  
     INTNUM = r'(0|[1-9]\d*)((E|e)\+?\d+)?'   
     STRING = r'\"[^"\n]*\"|\'[^\'\n]*\''
     
-    #ogolne
-    ID = r'[_a-zA-Z][_a-zA-Z0-9]*'
 
     #keywords
     ID['if'] = IF
@@ -59,6 +56,9 @@ class Scanner(Lexer):
     ID['ones'] = ONES
     ID['print'] = PRINT
     
+    #ogolne
+    ID = r'[_a-zA-Z][_a-zA-Z0-9]*'
+ 
     @_(r'\n+')
     def count_newline(self, t):
         self.lineno += t.value.count('\n')
