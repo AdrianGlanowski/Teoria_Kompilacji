@@ -18,5 +18,7 @@ C -= B ;  # substract B from C
 C *= A ;  # multiply A with C
 C /= A ;  # divide A by C
 
+y = 3;
+x = y';
 
-
+z = 5 + 6 / 7 - [ 1, 2 ] .* [3, 4];

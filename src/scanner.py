@@ -10,7 +10,7 @@ class Scanner(Lexer):
             EQ, NEQ, GTE, LTE,
             ADD_ASSIGN, SUB_ASSIGN, MUL_ASSIGN, DIV_ASSIGN,
 
-            ID, INTNUM, UMINUS,
+            ID, INTNUM,
             IF, ELSE, FOR, WHILE, BREAK, CONTINUE, RETURN, EYE, ZEROS, ONES, PRINT,
             FLOATNUM, INTNUM, STRING, PRINT
             }

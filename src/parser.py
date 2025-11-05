@@ -2,7 +2,6 @@
 from sly import Parser
 from scanner import Scanner
 
-
 class Mparser(Parser):
 
     tokens = Scanner.tokens
@@ -10,158 +9,148 @@ class Mparser(Parser):
     debugfile = 'parser.out'
 
     # Zadanie polega na stworzeniu parsera języka do operacji macierzowych. 
-    # Parser powinien rozponawać (akceptować) kod źródłowy w formie tokenów, bądz zglaszać bląd parsingu w przypadku nieprawidlowego wejścia. 
-    # Parser powinien rozpoznawać następujące konstrukcje:
-    # wyrażenia binarne, w tym operacje macierzowe 'element po elemencie'
-    # wyrażenia relacyjne,
-    # negację unarną,
-    # transpozycję macierzy,
-    # inicjalizację macierzy konkretnymi wartościami,
-    # macierzowe funkcje specjalne,
-    # instrukcję przypisania, w tym różne operatory przypisania
-    # instrukcję warunkową if-else,
-    # pętle: while and for,
-    # instrukcje break, continue oraz return,
-    # instrukcję print,
-    # instrukcje złożone,
+     
     # tablice i macierze oraz ich indeksy (ewentualnie zakresy).
-
+    #customowe bledy w parsingu
     precedence = (
-        ("left", '+', '-'),
-        ("left", '*', '/'),
-        ("right", UMINUS),
-        ("right", ELSE)
+        ('right', 'ELSE'),
+        ('right', 'MUL_ASSIGN', 'DIV_ASSIGN', 'SUB_ASSIGN', 'ADD_ASSIGN'),
+        ('nonassoc', '<', '>', 'LTE', 'GTE', 'NEQ', 'EQ'),
+        ('left', '+', '-'),
+        ('left', '*', '/'),
+        ('left', 'DOT_ADD', 'DOT_SUB'),
+        ('left', 'DOT_MUL', 'DOT_DIV'),
+        ('right', 'UMINUS'),
+        ('left', "'"),
     )
     
     #---------------------------
     #program to ciąg statementow
-    @_('statements')
+    @_('lines')
     def program(self, p):
         pass
 
     #---------------------------
     #statementy
-    @_('statements statement')
-    def statements(self, p):
+    @_('lines line')
+    def lines(self, p):
         pass
     
-    @_('statement')
-    def statements(self, p):
+    @_('line')
+    def lines(self, p):
         pass
 
     @_('assign ";"')
-    def statement(self, p):
+    def line(self, p):
         pass
 
     #break dziala wszedzie, a powinien tylko w petli
     @_('BREAK ";"')
-    def statement(self, p):
+    def line(self, p):
         pass
     #continue dziala wszedzie, a powinien tylko w petli
     @_('CONTINUE ";"')
-    def statement(self, p):
+    def line(self, p):
         pass
 
-    @_('RETURN return_values ";"')
-    def statement(self, p):
+    @_('RETURN statement_values ";"')
+    def line(self, p):
         pass
     
     @_('add_assign ";"')
-    def statement(self, p):
+    def line(self, p):
         pass
 
     @_('sub_assign ";"')
-    def statement(self, p):
+    def line(self, p):
         pass
 
     @_('mul_assign ";"')
-    def statement(self, p):
+    def line(self, p):
         pass
 
     @_('div_assign ";"')
-    def statement(self, p):
+    def line(self, p):
         pass
 
-    @_('PRINT ID ";"')
-    def statement(self, p):
+    @_('matrix_assign ";"')
+    def line(self, p):
         pass
 
-    @_('PRINT print_values ";"')
-    def statement(self, p):
+    @_('PRINT statement_values ";"')
+    def line(self, p):
         pass
 
     @_('if_statement')
-    def statement(self, p):
+    def line(self, p):
         pass
 
-    @_('IF "(" relative ")" statement')
+    @_('line',
+       '"{" lines "}"')
+    def block(self, p):
+        pass 
+
+    #pomysl: osobny if dla petli
+    @_('IF "(" relative ")" block')
     def if_statement(self, p):
         pass
 
-    @_('IF "(" relative ")" "{" statement "}"')
+    @_('if_statement ELSE block')
     def if_statement(self, p):
         pass
-
+    
     @_('if_statement ELSE if_statement')
     def if_statement(self, p):
         pass
-
-    @_('if_statement ELSE statements')
-    def if_statement(self, p):
-        pass
-
+    
     @_('while_statement')
-    def statement(self, p):
+    def line(self, p):
         pass
 
-    @_('WHILE "(" relative ")" "{" statements "}"')
-    def while_statement(self, p):
-        pass
-
-    @_('WHILE "(" relative ")" statement')
+    @_('WHILE "(" relative ")" block')
     def while_statement(self, p):
         pass
 
     @_('for_statement')
-    def statement(self, p):
+    def line(self, p):
         pass
     
-    @_('FOR ID "=" expr ":" expr "{" statements "}"')
+    @_('FOR variable "=" expr ":" expr block')
     def for_statement(self, p):
         pass
     
-    @_('FOR ID "=" expr ":" expr statement')
-    def for_statement(self, p):
-        pass
-   
     #---------------------------
     #polecenia
-    @_('ID "=" expr')
+    @_('variable "=" expr')
     def assign(self, p):
         pass
 
-    @_('ID "=" STRING')
+    @_('variable "=" STRING')
     def assign(self, p):
         pass
 
-    @_('ID ADD_ASSIGN expr')
+    @_('variable ADD_ASSIGN expr')
     def add_assign(self, p):
         pass
 
-    @_('ID SUB_ASSIGN expr')
+    @_('variable SUB_ASSIGN expr')
     def sub_assign(self, p):
         pass
 
-    @_('ID MUL_ASSIGN expr')
+    @_('variable MUL_ASSIGN expr')
     def mul_assign(self, p):
         pass
 
-    @_('ID DIV_ASSIGN expr')
+    @_('variable DIV_ASSIGN expr')
     def div_assign(self, p):
         pass
     
-    @_('ID "[" row "]" "=" expr')
-    def mul_assign(self, p):
+    @_('ID "[" indexes "]" "=" expr')
+    def matrix_assign(self, p):
+        pass
+
+    @_('ID "[" index "]" "=" expr')
+    def matrix_assign(self, p):
         pass
 
     #---------------------------
@@ -170,7 +159,15 @@ class Mparser(Parser):
     def matrix(self, p):
         pass
     
-    #matrix_style_1 -> example2.m
+    @_('INTNUM "," INTNUM')
+    def indexes(self, p):
+        pass
+
+    @_('INTNUM')
+    def index(self, p):
+        pass
+
+    #matrix_style_1 -> example1.m
     @_('"[" "]"')
     def matrix(self, p):
         pass
@@ -208,14 +205,19 @@ class Mparser(Parser):
     def rows2(self,p):
         pass
 
-    @_('row "," INTNUM')
+    @_('row "," number')
     def row(self,p):
         pass
 
-    @_('INTNUM')
+    @_('number')
     def row(self,p):
         pass
 
+    @_('INTNUM',
+       'FLOATNUM')
+    def number(self, p):
+        pass
+    
     @_('ZEROS "(" INTNUM ")"')
     def matrix(self, p):
         pass
@@ -272,87 +274,44 @@ class Mparser(Parser):
     def expr(self, p):
         pass
 
-    @_('INTNUM')
-    def expr(self, p):
-        pass
-
-    @_('FLOATNUM')
+    @_('number')
     def expr(self, p):
         pass
     
-    @_('ID "\'"')
+    @_('variable "\'"')
     def expr(self, p):
-        pass 
+        pass
+
+    @_('variable')
+    def expr(self, p):
+        pass
 
     @_('ID')
-    def expr(self, p):
+    def variable(self, p):
         pass 
    
     #---------------------------
     #relative
-    @_('expr ">" expr')
-    def relative(self, p):
+    @_('">"', '"<"', 'EQ', 'NEQ', 'GTE', 'LTE')
+    def rel_op(self, p):
         pass
-
-    @_('expr GTE expr')
-    def relative(self, p):
-        pass
-
-    @_('expr "<" expr')
-    def relative(self, p):
-        pass
-
-    @_('expr LTE expr')
-    def relative(self, p):
-        pass
-
-    @_('expr EQ expr')
-    def relative(self, p):
-        pass
-
-    @_('expr NEQ expr')
+    @_('expr rel_op expr')
     def relative(self, p):
         pass
 
     #---------------------------
 
-    @_('print_values "," print_value')
-    def print_values(self, p):
+    @_('statement_values "," statement_value')
+    def statement_values(self, p):
         pass
     
-    @_('print_value')
-    def print_values(self, p):
+    @_('statement_value')
+    def statement_values(self, p):
         pass
 
-    @_('STRING')
-    def print_value(self, p):
+    @_('STRING', 'expr', 'variable')
+    def statement_value(self, p):
         pass
 
-    @_('ID')
-    def print_value(self, p):
-        pass
-
-    @_('return_values "," return_value')
-    def return_values(self, p):
-        pass
-    
-    @_('return_value')
-    def return_values(self, p):
-        pass
-
-    @_('STRING')
-    def return_value(self, p):
-        pass
-
-    @_('ID')
-    def return_value(self, p):
-        pass
-
-    @_('FLOATNUM')
-    def return_value(self, p):
-        pass
-
-    @_('expr')
-    def return_value(self, p):
-        pass
+   
 
