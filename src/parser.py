@@ -74,6 +74,21 @@ class Mparser(Parser):
     def statement(self, p):
         pass
 
+    @_('PRINT passed_values')
+    def statement(self, p):
+        pass
+
+    @_('passed_values "," passed_value')
+    def passed_values(self, p):
+        pass
+
+    @_('passed_value')
+    def passed_values(self, p):
+        pass
+
+    @_('STRING', 'expr')
+    def passed_value(self, p):
+        pass
     # ---------------------------
     # assignments
     @_('var "=" expr',
@@ -182,6 +197,14 @@ class Mparser(Parser):
     def expr(self, p):
         pass
 
+    @_("matrix_element")
+    def expr(self, p):
+        pass
+
+    @_('var "\'" ')
+    def expr(self, p):
+        pass
+
     @_("INTNUM")
     def expr(self, p):
         pass
@@ -271,7 +294,11 @@ class Mparser(Parser):
     def line(self, p):
         pass
 
-    @_('var "[" indices "]" "=" expr')
+    @_('var "[" indices "]" ')
+    def matrix_element(self, p):
+        pass
+
+    @_('matrix_element "=" expr')
     def matrix_assign(self, p):
         pass
 
@@ -282,3 +309,9 @@ class Mparser(Parser):
     @_('expr "," indices')
     def indices(self, p):
         pass
+
+    def error(self, p):
+        if p:
+            print(f"{'\033[91m'}Syntax error at token {p.type}, value={p.value!r}, line={p.lineno}{'\033[0m'}")
+        else:
+            print(f"{'\033[91m'}Syntax error at end of input{'\033[0m'}")
