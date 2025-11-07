@@ -29,6 +29,8 @@ while(k>0) {
     k = k - 1;
 }
 
+
+
 while(k>0) {
     if(k<5)
         i = 1;
@@ -44,7 +46,6 @@ while(k>0) {
 for i = 1:N
   for j = i:M
     print i, j;
- 
 
 for i = 1:N {
     if(i<=N/16)
@@ -56,5 +57,3 @@ for i = 1:N {
     else if(i<=N/2)
         return 0;
 }
-
-

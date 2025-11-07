@@ -1,5 +1,4 @@
 # pyright: reportUndefinedVariable=false
-
 import sys
 from sly import Lexer
 
@@ -13,7 +12,7 @@ class Scanner(Lexer):
 
             ID, INTNUM,
             IF, ELSE, FOR, WHILE, BREAK, CONTINUE, RETURN, EYE, ZEROS, ONES, PRINT,
-            FLOATNUM, INTNUM, STRING
+            FLOATNUM, INTNUM, STRING, PRINT
             }
 
     ignore = ' \t'
@@ -25,7 +24,6 @@ class Scanner(Lexer):
     DOT_SUB = r'\.\-'
     DOT_MUL = r'\.\*'
     DOT_DIV = r'\.\/'
-
 
     #relative operators
     EQ = r'=='
@@ -39,20 +37,12 @@ class Scanner(Lexer):
     MUL_ASSIGN = r'\*='
     DIV_ASSIGN = r'/='
 
-
-
     #first is .num, second is num., last is special case of first with 0. 
-    FLOATNUM = r'0?\.[0-9]+((E|e)-?[0-9]+)?|[1-9][0-9]*\.([0-9]+((E|e)-?(0|[1-9][0-9]*))?)?|0\.[0-9]*((E|e)-?[0-9]+)?'
-    INTNUM = r'(0|[1-9][0-9]*)((E|e)\+?(0|[1-9][0-9]*))?'   
-    STRING = r'\"[ -~]*\"|\'[ -~]*\'' #any ascii char in quotaion marks
+    FLOATNUM = r'(0?\.\d+|[1-9]\d*\.\d*|0\.\d*)((E|e)(-|\+)?\d+)?'  
+    INTNUM = r'(0|[1-9]\d*)((E|e)\+?\d+)?'   
+    STRING = r'\"[^"\n]*\"|\'[^\'\n]*\''
     
-    # FLOATNUM = r'0?\.[0-9]+((E|e)(-|+)?[0-9]+)?|[1-9][0-9]*\.([0-9]+((E|e)(-|+)?(0|[1-9][0-9]*))?)?|0\.[0-9]*((E|e)(-|+)?[0-9]+)?'
-    # INTNUM = r'(0|[1-9][0-9]*)((E|e)+?(0|[1-9][0-9]*))?'
-    # STRING = r'\"[^\"]\"|\'[^\']*\'' #any ascii char in quotaion marks
 
-    #ogolne
-    ID = r'[_a-zA-Z][_a-zA-Z0-9]*'
-    
     #keywords
     ID['if'] = IF
     ID['else'] = ELSE
@@ -66,7 +56,9 @@ class Scanner(Lexer):
     ID['ones'] = ONES
     ID['print'] = PRINT
     
-
+    #ogolne
+    ID = r'[_a-zA-Z][_a-zA-Z0-9]*'
+ 
     @_(r'\n+')
     def count_newline(self, t):
         self.lineno += t.value.count('\n')
