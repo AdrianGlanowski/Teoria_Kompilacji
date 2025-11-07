@@ -70,12 +70,16 @@ class Mparser(Parser):
     def statement(self, p):
         pass
 
-    @_("PRINT expr")
+    @_("PRINT print_args")
     def statement(self, p):
         pass
 
-    @_("PRINT STRING")
-    def statement(self, p):
+    @_("print_args ',' expr")
+    def print_args(self, p):
+        pass
+
+    @_("expr")
+    def print_args(self, p):
         pass
 
     # ---------------------------
