@@ -2,6 +2,7 @@
 from sly import Parser
 from scanner import Scanner
 
+
 class Mparser(Parser):
 
     tokens = Scanner.tokens
@@ -13,7 +14,8 @@ class Mparser(Parser):
     # tablice i macierze oraz ich indeksy (ewentualnie zakresy).
     # customowe bledy w parsingu
     precedence = (
-        ("right", "ELSE"),
+        ("nonassoc", "IFX"),
+        ("nonassoc", "ELSE"),
         ("right", "MUL_ASSIGN", "DIV_ASSIGN", "SUB_ASSIGN", "ADD_ASSIGN"),
         ("nonassoc", "<", ">", "LTE", "GTE", "NEQ", "EQ"),
         ("left", "+", "-"),
@@ -32,25 +34,23 @@ class Mparser(Parser):
 
     # ---------------------------
     # lines
-    @_("lines line")
+    @_("line lines")
     def lines(self, p):
         pass
 
-    @_("line")
+    @_("")
     def lines(self, p):
         pass
 
     # ---------------------------
     # line
-    @_('assignment ";"',
-       'statement ";"',
-       'if_statement',
-       'while_statement',
-       'for_statement',)
-    def line(self, p):
-        pass
-
-    @_('')
+    @_(
+        'assignment ";"',
+        'statement ";"',
+        "if_statement",
+        "while_statement",
+        "for_statement",
+    )
     def line(self, p):
         pass
 
@@ -58,41 +58,41 @@ class Mparser(Parser):
     # statements
 
     # BREAK I CONTINUE DZIALA WSZEDZIE, A POWINIEN TYLKO W PETLI
-    @_('BREAK')
+    @_("BREAK")
     def statement(self, p):
         pass
 
-    @_('CONTINUE')
+    @_("CONTINUE")
     def statement(self, p):
         pass
 
-    @_('RETURN expr')
+    @_("RETURN expr")
     def statement(self, p):
         pass
 
-    @_('PRINT expr')
+    @_("PRINT print_args")
     def statement(self, p):
         pass
 
-    @_('PRINT passed_values')
-    def statement(self, p):
+    @_("print_args ',' print_arg")
+    def print_args(self, p):
         pass
 
-    @_('passed_values "," passed_value')
-    def passed_values(self, p):
+    @_("print_arg")
+    def print_args(self, p):
         pass
 
-    @_('passed_value')
-    def passed_values(self, p):
+    @_("expr")
+    def print_arg(self, p):
         pass
 
-    @_('STRING', 'expr')
-    def passed_value(self, p):
+    @_("STRING")
+    def print_arg(self, p):
         pass
+
     # ---------------------------
     # assignments
-    @_('var "=" expr',
-       'var "=" STRING')
+    @_('var "=" expr', 'var "=" STRING')
     def assignment(self, p):
         pass
 
@@ -115,17 +115,17 @@ class Mparser(Parser):
     # ---------------------------
     # warunki i petle
     # pomysl: osobny if dla petli
-    @_('IF "(" condition ")" block')
+    @_('IF "(" condition ")" block %prec IFX')
     def if_statement(self, p):
         pass
 
-    @_("if_statement ELSE block")
+    @_('IF "(" condition ")" block ELSE block')
     def if_statement(self, p):
         pass
 
-    @_("if_statement ELSE if_statement")
-    def if_statement(self, p):
-        pass
+    # @_("if_statement ELSE if_statement")
+    # def if_statement(self, p):
+    #     pass
 
     @_('WHILE "(" condition ")" block')
     def while_statement(self, p):
@@ -230,25 +230,25 @@ class Mparser(Parser):
         pass
 
     # matrix_style_1 -> example1.m
-    @_('"[" "]"')
-    def matrix(self, p):
-        pass
+    # @_('"[" "]"')
+    # def matrix(self, p):
+    #     pass
 
-    @_("matrix1")
-    def matrix(self, p):
-        pass
+    # @_("matrix1")
+    # def matrix(self, p):
+    #     pass
 
-    @_('"[" rows1 "]"')
-    def matrix1(self, p):
-        pass
+    # @_('"[" rows1 "]"')
+    # def matrix1(self, p):
+    #     pass
 
-    @_('rows1 ";" row')
-    def rows1(self, p):
-        pass
+    # @_('rows1 ";" row')
+    # def rows1(self, p):
+    #     pass
 
-    @_("row")
-    def rows1(self, p):
-        pass
+    # @_("row")
+    # def rows1(self, p):
+    #     pass
 
     # matrix_style_2 -> example.txt
     @_("matrix2")
@@ -302,7 +302,7 @@ class Mparser(Parser):
     def matrix_assign(self, p):
         pass
 
-    @_('expr')
+    @_("expr")
     def indices(self, p):
         pass
 
@@ -312,6 +312,8 @@ class Mparser(Parser):
 
     def error(self, p):
         if p:
-            print(f"{'\033[91m'}Syntax error at token {p.type}, value={p.value!r}, line={p.lineno}{'\033[0m'}")
+            print(
+                f"{'\033[91m'}Syntax error at token {p.type}, value={p.value!r}, line={p.lineno}{'\033[0m'}"
+            )
         else:
             print(f"{'\033[91m'}Syntax error at end of input{'\033[0m'}")
