@@ -56,7 +56,7 @@ class Scanner(Lexer):
     ID['ones'] = ONES
     ID['print'] = PRINT
     
-    #ogolne
+    #general
     ID = r'[_a-zA-Z][_a-zA-Z0-9]*'
  
     @_(r'\n+')
