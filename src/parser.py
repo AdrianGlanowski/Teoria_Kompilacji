@@ -74,12 +74,20 @@ class Mparser(Parser):
     def statement(self, p):
         pass
 
-    @_("print_args ',' expr")
+    @_("print_args ',' print_arg")
+    def print_args(self, p):
+        pass
+
+    @_("print_arg")
     def print_args(self, p):
         pass
 
     @_("expr")
-    def print_args(self, p):
+    def print_arg(self, p):
+        pass
+
+    @_("STRING")
+    def print_arg(self, p):
         pass
 
     # ---------------------------
