@@ -2,6 +2,18 @@
 from sly import Parser
 from scanner import Scanner
 
+import AST
+
+# wyrażenia binarne,
+# wyrażenia relacyjne,
+# instrukcje przypisania,
+# instrukcje warunkowe if-else,
+# pętle: while oraz for,
+# instrukcje break, continue oraz return,
+# instrukcje print,
+# instrukcje złożone,
+# tablice oraz ich zakresy.
+
 
 class Mparser(Parser):
 
@@ -50,6 +62,7 @@ class Mparser(Parser):
         "if_statement",
         "while_statement",
         "for_statement",
+        "matrix_assign ';'"
     )
     def line(self, p):
         pass
@@ -157,37 +170,17 @@ class Mparser(Parser):
     def expr(self, p):
         pass
 
-    @_('expr "+" expr')
+    @_('expr "+" expr',
+       'expr "-" expr',
+       'expr "*" expr',
+       'expr "/" expr',
+       "expr DOT_ADD expr",
+       "expr DOT_SUB expr",
+       "expr DOT_MUL expr",
+       "expr DOT_DIV expr")
     def expr(self, p):
-        pass
+        return AST.BinExpr(p[1], p[0], p[2])
 
-    @_("expr DOT_ADD expr")
-    def expr(self, p):
-        pass
-
-    @_('expr "-" expr')
-    def expr(self, p):
-        pass
-
-    @_("expr DOT_SUB expr")
-    def expr(self, p):
-        pass
-
-    @_('expr "*" expr')
-    def expr(self, p):
-        pass
-
-    @_("expr DOT_MUL expr")
-    def expr(self, p):
-        pass
-
-    @_('expr "/" expr')
-    def expr(self, p):
-        pass
-
-    @_("expr DOT_DIV expr")
-    def expr(self, p):
-        pass
 
     @_('"(" expr ")"')
     def expr(self, p):
@@ -287,11 +280,6 @@ class Mparser(Parser):
 
     @_('EYE "(" INTNUM ")"')
     def matrix(self, p):
-        pass
-
-    # matrix assignment
-    @_('matrix_assign ";"')
-    def line(self, p):
         pass
 
     @_('var "[" indices "]" ')
