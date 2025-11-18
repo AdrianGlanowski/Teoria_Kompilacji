@@ -214,16 +214,20 @@ class Mparser(Parser):
     def matrix(self, p):
         pass
 
-    @_('"[" rows "]"')
+    @_('"[" vectors "]"')
     def matrix(self, p):
         pass
 
-    @_('rows "," "[" row "]"')
-    def rows(self, p):
+    @_('vectors "," vector')
+    def vectors(self, p):
+        pass
+
+    @_('vector')
+    def vectors(self, p):
         pass
 
     @_('"[" row "]"')
-    def rows(self, p):
+    def vector(self, p):
         pass
 
     # rows
@@ -248,20 +252,12 @@ class Mparser(Parser):
     def matrix(self, p):
         pass
 
-    @_('var "[" indices "]" ')
+    @_('var vector')
     def matrix_element(self, p):
         pass
 
     @_('matrix_element "=" expr')
     def matrix_assign(self, p):
-        pass
-
-    @_("expr")
-    def indices(self, p):
-        pass
-
-    @_('expr "," indices')
-    def indices(self, p):
         pass
 
     def error(self, p):
