@@ -14,11 +14,9 @@ class TreePrinter:
         raise Exception("printTree not defined in class " + self.__class__.__name__)
 
 
-    @addToClass(AST.IntNum)
+    @addToClass(AST.Assignment)
     def printTree(self, indent=0):
-        pass
-        # fill in the body
-
+        print("| "*indent )
 
     @addToClass(AST.Error)
     def printTree(self, indent=0):

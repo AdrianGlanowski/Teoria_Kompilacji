@@ -84,37 +84,36 @@ class PrintStatement(Statement):
 
 
 
-
-class Variable(Node):
-    def __init__(self, name):
-        self.name = name
-
-
-class Condition(Node):
-    def __init__(self, op, left, right):
-        self.op = op
-        self.left = left
-        self.right = right
+# class Variable(Node):
+#     def __init__(self, name):
+#         self.name = name
 
 
-class Array(Node):
-    def __init__(self, elements):
-        self.elements = elements
+# class Condition(Node):
+#     def __init__(self, op, left, right):
+#         self.op = op
+#         self.left = left
+#         self.right = right
 
 
-class Block(Node):
-    def __init__(self, statements):
-        self.statements = statements
+# class Array(Node):
+#     def __init__(self, elements):
+#         self.elements = elements
 
 
-class ArrayRange(Node):
-    def __init__(self, array, start, end):
-        self.array = array
-        self.start = start
-        self.end = end
+# class Block(Node):
+#     def __init__(self, statements):
+#         self.statements = statements
+
+
+# class ArrayRange(Node):
+#     def __init__(self, array, start, end):
+#         self.array = array
+#         self.start = start
+#         self.end = end
 
 
 
-class Error(Node):
-    def __init__(self):
-        pass
+# class Error(Node):
+#     def __init__(self):
+#         pass

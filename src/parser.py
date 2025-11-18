@@ -1,7 +1,7 @@
 # pyright: reportUndefinedVariable=false
 from sly import Parser
 from scanner import Scanner
-
+from ParserError import ParserError
 import AST
 
 # wyrażenia binarne,
@@ -13,6 +13,7 @@ import AST
 # instrukcje print,
 # instrukcje złożone,
 # tablice oraz ich zakresy.
+
 
 
 class Mparser(Parser):
@@ -42,17 +43,17 @@ class Mparser(Parser):
     # program to ciąg linijek (lines)
     @_("lines")
     def program(self, p):
-        pass
+        return p.lines
 
     # ---------------------------
     # lines
     @_("line lines")
     def lines(self, p):
-        pass
+        return [p.line] + p.lines
 
     @_("")
     def lines(self, p):
-        pass
+        return []
 
     # ---------------------------
     # line
@@ -73,19 +74,19 @@ class Mparser(Parser):
     # BREAK I CONTINUE DZIALA WSZEDZIE, A POWINIEN TYLKO W PETLI
     @_("BREAK")
     def statement(self, p):
-        pass
+        return AST.BreakStatement()
 
     @_("CONTINUE")
     def statement(self, p):
-        pass
-
+        return AST.ContinueStatement()
+        
     @_("RETURN expr")
     def statement(self, p):
-        pass
+        return AST.ReturnStatement(p.expr)
 
     @_("PRINT print_args")
     def statement(self, p):
-        pass
+        return AST.PrintStatement(p[1])
 
     @_("print_args ',' print_arg")
     def print_args(self, p):
@@ -101,58 +102,49 @@ class Mparser(Parser):
 
     @_("STRING")
     def print_arg(self, p):
-        pass
+        return str(p[0])
 
     # ---------------------------
     # assignments
-    @_('var "=" expr', 'var "=" STRING')
+    @_('var "=" expr',
+       'var "=" STRING',
+       'var ADD_ASSIGN expr',
+       'var SUB_ASSIGN expr',
+       'var MUL_ASSIGN expr',
+       'var DIV_ASSIGN expr')
     def assignment(self, p):
-        pass
+        return AST.Assignment(p.var, p[1], p[2])
 
-    @_("var ADD_ASSIGN expr")
-    def assignment(self, p):
-        pass
-
-    @_("var SUB_ASSIGN expr")
-    def assignment(self, p):
-        pass
-
-    @_("var MUL_ASSIGN expr")
-    def assignment(self, p):
-        pass
-
-    @_("var DIV_ASSIGN expr")
-    def assignment(self, p):
-        pass
 
     # ---------------------------
     # warunki i petle
     # pomysl: osobny if dla petli
     @_('IF "(" condition ")" block %prec IFX')
     def if_statement(self, p):
-        pass
+        return AST.IfStatement(p.condition, p.block)
 
     @_('IF "(" condition ")" block ELSE block')
     def if_statement(self, p):
-        pass
-
-    # @_("if_statement ELSE if_statement")
-    # def if_statement(self, p):
-    #     pass
+        return AST.IfStatement(p.condition, p.block0, p.block1)
 
     @_('WHILE "(" condition ")" block')
     def while_statement(self, p):
-        pass
+        return AST.WhileStatement(p.condition, p.block)
+
 
     @_('FOR var "=" expr ":" expr block')
     def for_statement(self, p):
-        pass
+        return AST.ForStatement(p.var, p.expr0, p.expr1, p.block)
 
     # ---------------------------
     # blok
-    @_("line", '"{" lines "}"')
+    @_("line")
     def block(self, p):
-        pass
+        return [p.line]
+    
+    @_('"{" lines "}"')
+    def block(self, p):
+        return p.lines
 
     # ---------------------------
     # condition
@@ -184,7 +176,7 @@ class Mparser(Parser):
 
     @_('"(" expr ")"')
     def expr(self, p):
-        pass
+        return p.expr
 
     @_("matrix")
     def expr(self, p):
@@ -200,21 +192,21 @@ class Mparser(Parser):
 
     @_("INTNUM")
     def expr(self, p):
-        pass
+        return int(p[0])
 
     @_("FLOATNUM")
     def expr(self, p):
-        pass
+        return float(p[0])
 
     @_("var")
     def expr(self, p):
-        pass
+        return p.var
 
     # ---------------------------
     # variable
     @_("ID")
     def var(self, p):
-        pass
+        return p[0]
 
     # ---------------------------
     # matrix
@@ -222,42 +214,16 @@ class Mparser(Parser):
     def matrix(self, p):
         pass
 
-    # matrix_style_1 -> example1.m
-    # @_('"[" "]"')
-    # def matrix(self, p):
-    #     pass
-
-    # @_("matrix1")
-    # def matrix(self, p):
-    #     pass
-
-    # @_('"[" rows1 "]"')
-    # def matrix1(self, p):
-    #     pass
-
-    # @_('rows1 ";" row')
-    # def rows1(self, p):
-    #     pass
-
-    # @_("row")
-    # def rows1(self, p):
-    #     pass
-
-    # matrix_style_2 -> example.txt
-    @_("matrix2")
+    @_('"[" rows "]"')
     def matrix(self, p):
         pass
 
-    @_('"[" rows2 "]"')
-    def matrix2(self, p):
-        pass
-
-    @_('rows2 "," "[" row "]"')
-    def rows2(self, p):
+    @_('rows "," "[" row "]"')
+    def rows(self, p):
         pass
 
     @_('"[" row "]"')
-    def rows2(self, p):
+    def rows(self, p):
         pass
 
     # rows
@@ -305,3 +271,4 @@ class Mparser(Parser):
             )
         else:
             print(f"{'\033[91m'}Syntax error at end of input{'\033[0m'}")
+        raise ParserError
