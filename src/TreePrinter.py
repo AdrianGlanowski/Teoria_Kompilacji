@@ -49,8 +49,8 @@ class TreePrinter:
     def printTree(self: AST.FloatNum, indent=0):
         print("|  " * indent + f"{self.value}")
 
-    @addToClass(AST.Function)
-    def printTree(self: AST.Function, indent=0):
+    @addToClass(AST.FunctionCall)
+    def printTree(self: AST.FunctionCall, indent=0):
         print("|  " * indent + f"{self.name}")
         TreePrinter.safePrintTree(self.args, indent + 1)
     
@@ -66,8 +66,8 @@ class TreePrinter:
         for value in self.values:
             TreePrinter.safePrintTree(value, indent + 1)
 
-    @addToClass(AST.VariableRefference)
-    def printTree(self: AST.VariableRefference, indent=0):
+    @addToClass(AST.Id)
+    def printTree(self: AST.Id, indent=0):
         print("|  " * indent + f"{self.name}")
     
     @addToClass(AST.MatrixRefference)
@@ -106,8 +106,41 @@ class TreePrinter:
         for value in self.values:
             TreePrinter.safePrintTree(value, indent)
         
+    @addToClass(AST.IfStatement)
+    def printTree(self: AST.IfStatement, indent=0):
+        print("|  " * indent + f"IF")
+        TreePrinter.safePrintTree(self.condition, indent + 1)
+        TreePrinter.safePrintTree(self.then_branch, indent + 1)
+        if self.else_branch:
+            print("|  " * indent + f"ELSE")
+            TreePrinter.safePrintTree(self.else_branch, indent + 1)
     
-    
+    @addToClass(AST.WhileStatement)
+    def printTree(self: AST.WhileStatement, indent=0):
+        print("|  " * indent + f"WHILE")
+        TreePrinter.safePrintTree(self.condition, indent + 1)
+        TreePrinter.safePrintTree(self.body, indent + 1)
+
+    @addToClass(AST.BreakStatement)
+    def printTree(self, indent=0):
+        print("|  " * indent + "BREAK")
+
+    @addToClass(AST.ContinueStatement)
+    def printTree(self, indent=0):
+        print("|  " * indent + "CONTINUE")
+
+    @addToClass(AST.ReturnStatement)
+    def printTree(self: AST.ReturnStatement, indent=0):
+        print("|  " * indent + "RETURN")
+        if self.value:
+            TreePrinter.safePrintTree(self.value, indent + 1)
+
+    @addToClass(AST.Condition)
+    def printTree(self: AST.Condition, indent=0):
+        print("|  " * indent + f"{self.op}")
+        TreePrinter.safePrintTree(self.left, indent + 1)
+        TreePrinter.safePrintTree(self.right, indent + 1)
+
     # @addToClass(AST.Error)
     # def printTree(self, indent=0):
     #     pass    

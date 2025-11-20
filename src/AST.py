@@ -1,70 +1,68 @@
-# if-else, while
-
-from ParserError import ParserError
-
-class Root:
+class Node:
     pass
 
-class Program(Root):
+
+class Program(Node):
     def __init__(self, lines):
         self.lines = lines
 
 
 # instrukcje złożone
-class Block(Root):
+class Block(Node):
     def __init__(self, lines):
         self.lines = lines
 
-class Statement(Program):
-    pass
 
-class Function(Statement):
+class FunctionCall(Node):
     def __init__(self, name, args):
         self.name = name
         self.args = args
 
-class Expr(Statement):
-    pass
 
-class UnaryExpr(Expr):
+class UnaryExpr(Node):
     def __init__(self, op, arg):
         self.op = "MINUS" if op == "-" else "TRANSPOSE"
         self.arg = arg
 
 
 # wyrażenia binarne
-class BinaryExpr(Expr):
+class BinExpr(Node):
     def __init__(self, op, left, right):
         self.op = op
         self.left = left
         self.right = right
 
-class IntNum(Expr):
+
+class IntNum(Node):
     def __init__(self, value):
         self.value = value
 
-class FloatNum(Expr):
+
+class FloatNum(Node):
     def __init__(self, value):
         self.value = value
 
-class Variable(Expr):
-    def __init__(self, name):
-        self.name = name
 
-class Vector(Expr):
+class Vector(Node):
     def __init__(self, values):
         self.values = values
 
-class Matrix(Expr):
+
+class Matrix(Node):
     def __init__(self, rows):
         self.rows = rows
 
 
+class Id(Node):
+    def __init__(self, name):
+        self.name = name
+
+
 # instrukcje przypisania
-class Assignment(Statement):
-    def __init__(self, variable, op, value):
-        self.variable = variable
+class Assignment(Node):
+    def __init__(self, op, variable, value):
         self.op = op
+        self.variable = variable
         self.value = value
 
 
@@ -75,7 +73,7 @@ class RelationExpr():
         pass
 
 # instrukcje warunkowe if-else
-class IfStatement(Statement):
+class IfStatement(Node):
     def __init__(self, condition, then_branch, else_branch=None):
         self.condition = condition
         self.then_branch = then_branch
@@ -83,17 +81,19 @@ class IfStatement(Statement):
 
 
 # pętle: while oraz for
-class WhileStatement(Statement):
+class WhileStatement(Node):
     def __init__(self, condition, body):
         self.condition = condition
         self.body = body
 
-class Range(Statement):
+
+class Range(Node):
     def __init__(self, start, end):
         self.start = start
         self.end = end
 
-class ForStatement(Statement):
+
+class ForStatement(Node):
     def __init__(self, variable, start, end, body):
         self.variable = variable
         self.range = Range(start, end)
@@ -101,39 +101,37 @@ class ForStatement(Statement):
 
 
 # instrukcje break, continue oraz return
-class BreakStatement(Statement):
-    def __init__(self):
-        pass
+class BreakStatement(Node):
+    pass
 
-class ContinueStatement(Statement):
-    def __init__(self):
-        pass
 
-class ReturnStatement(Statement):
+class ContinueStatement(Node):
+    pass
+
+
+class ReturnStatement(Node):
     def __init__(self, value=None):
         self.value = value
 
 
 # instrukcje print
-class PrintStatement(Statement):
+class PrintStatement(Node):
     def __init__(self, values):
         self.values = values
 
-class Refference():
-    pass
-
-class VariableRefference(Refference):
-    def __init__(self, name):
-        self.name = name
-
 
 # tablice oraz ich zakresy
-class MatrixRefference(Refference):
+class MatrixRefference(Node):
     def __init__(self, variable, reffs):
         self.variable = variable
-        if not all(isinstance(v, int) or (isinstance(v, Expr) and not (isinstance(v, FloatNum))) for v in reffs.values):
-            raise ParserError("Arrays can be only refferenced by ints")
         self.reffs = reffs
+
+
+class Condition(Node):
+    def __init__(self, op, left, right):
+        self.op = op
+        self.left = left
+        self.right = right
 
 # class Error(Node):
 #     def __init__(self):

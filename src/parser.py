@@ -15,7 +15,6 @@ import AST
 # tablice oraz ich zakresy.
 
 
-
 class Mparser(Parser):
 
     tokens = Scanner.tokens
@@ -63,7 +62,7 @@ class Mparser(Parser):
         "if_statement",
         "while_statement",
         "for_statement",
-        "matrix_assign ';'"
+        "matrix_assign ';'",
     )
     def line(self, p):
         return p[0]
@@ -79,7 +78,7 @@ class Mparser(Parser):
     @_("CONTINUE")
     def statement(self, p):
         return AST.ContinueStatement()
-        
+
     @_("RETURN expr")
     def statement(self, p):
         return AST.ReturnStatement(p.expr)
@@ -106,20 +105,19 @@ class Mparser(Parser):
 
     # ---------------------------
     # assignments
-    @_('var "=" expr',
-       'var ADD_ASSIGN expr',
-       'var SUB_ASSIGN expr',
-       'var MUL_ASSIGN expr',
-       'var DIV_ASSIGN expr')
+    @_(
+        'var "=" expr',
+        "var ADD_ASSIGN expr",
+        "var SUB_ASSIGN expr",
+        "var MUL_ASSIGN expr",
+        "var DIV_ASSIGN expr",
+    )
     def assignment(self, p):
-        return AST.Assignment(p.var, p[1], p.expr)
-    
-    
+        return AST.Assignment(p[1], p.var, p.expr)
+
     @_('var "=" STRING')
     def assignment(self, p):
-        return AST.Assignment(p.var, p[1], p[2])
-        
-
+        return AST.Assignment(p[1], p.var, p[2])
 
     # ---------------------------
     # warunki i petle
@@ -136,7 +134,6 @@ class Mparser(Parser):
     def while_statement(self, p):
         return AST.WhileStatement(p.condition, p.block)
 
-
     @_('FOR var "=" expr ":" expr block')
     def for_statement(self, p):
         return AST.ForStatement(p.var, p.expr0, p.expr1, p.block)
@@ -146,7 +143,7 @@ class Mparser(Parser):
     @_("line")
     def block(self, p):
         return AST.Block([p.line])
-    
+
     @_('"{" lines "}"')
     def block(self, p):
         return AST.Block(p.lines)
@@ -155,11 +152,11 @@ class Mparser(Parser):
     # condition
     @_('">"', '"<"', "EQ", "NEQ", "GTE", "LTE")
     def comp_op(self, p):
-        pass
+        return p[0]
 
     @_("expr comp_op expr")
     def condition(self, p):
-        pass
+        return AST.Condition(p.comp_op, p.expr0, p.expr1)
 
     # ---------------------------
     # expressions
@@ -167,17 +164,18 @@ class Mparser(Parser):
     def expr(self, p):
         return AST.UnaryExpr(p[0], p.expr)
 
-    @_('expr "+" expr',
-       'expr "-" expr',
-       'expr "*" expr',
-       'expr "/" expr',
-       "expr DOT_ADD expr",
-       "expr DOT_SUB expr",
-       "expr DOT_MUL expr",
-       "expr DOT_DIV expr")
+    @_(
+        'expr "+" expr',
+        'expr "-" expr',
+        'expr "*" expr',
+        'expr "/" expr',
+        "expr DOT_ADD expr",
+        "expr DOT_SUB expr",
+        "expr DOT_MUL expr",
+        "expr DOT_DIV expr",
+    )
     def expr(self, p):
         return AST.BinaryExpr(p[1], p[0], p[2])
-
 
     @_('"(" expr ")"')
     def expr(self, p):
@@ -187,10 +185,6 @@ class Mparser(Parser):
     def expr(self, p):
         return p.matrix
 
-    @_("matrix_function")
-    def expr(self, p):
-        return p.matrix_function
-        
     @_("matrix_element")
     def expr(self, p):
         return p.matrix_element
@@ -215,7 +209,7 @@ class Mparser(Parser):
     # variable
     @_("ID")
     def var(self, p):
-        return AST.VariableRefference(p[0])
+        return AST.Id(p[0])
 
     # ---------------------------
     # matrix
@@ -227,11 +221,16 @@ class Mparser(Parser):
     def matrix(self, p):
         return AST.Matrix(p.vectors)
 
+    # matrix creation with functions
+    @_('ZEROS "(" INTNUM ")"', 'ONES "(" INTNUM ")"', 'EYE "(" INTNUM ")"')
+    def matrix(self, p):
+        return AST.FunctionCall(p[0], p[2])
+
     @_('vectors "," vector')
     def vectors(self, p):
         return p.vectors + [p.vector]
 
-    @_('vector')
+    @_("vector")
     def vectors(self, p):
         return [p.vector]
 
@@ -248,20 +247,13 @@ class Mparser(Parser):
     def row(self, p):
         return [p.expr]
 
-    # matrix creation with functions
-    @_('ZEROS "(" INTNUM ")"',
-       'ONES "(" INTNUM ")"',
-       'EYE "(" INTNUM ")"')
-    def matrix_function(self, p):
-        return AST.Function(p[0], p[2])
-
-    @_('var vector')
+    @_("var vector")
     def matrix_element(self, p):
         return AST.MatrixRefference(p.var, p.vector)
 
     @_('matrix_element "=" expr')
     def matrix_assign(self, p):
-        return AST.Assignment(p.matrix_element, p[1], p.expr)
+        return AST.Assignment(p[1], p.matrix_element, p.expr)
 
     def error(self, p):
         if p:
