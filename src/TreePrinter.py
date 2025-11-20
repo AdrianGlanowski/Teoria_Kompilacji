@@ -98,7 +98,7 @@ class TreePrinter:
     def printTree(self: AST.PrintStatement, indent=0):
         print("|  " * indent + f"PRINT")
         for value in self.values:
-            TreePrinter.safePrintTree(value, indent)
+            TreePrinter.safePrintTree(value, indent+1)
     
     @addToClass(AST.IfStatement)
     def printTree(self: AST.IfStatement, indent=0):

@@ -79,6 +79,10 @@ class Mparser(Parser):
     def statement(self, p):
         return AST.ContinueStatement()
 
+    @_("RETURN")
+    def statement(self, p):
+        return AST.ReturnStatement()
+
     @_("RETURN expr")
     def statement(self, p):
         return AST.ReturnStatement(p.expr)
@@ -101,7 +105,7 @@ class Mparser(Parser):
 
     @_("STRING")
     def print_arg(self, p):
-        return str(p[0])
+        return [str(p[0])]
 
     # ---------------------------
     # assignments

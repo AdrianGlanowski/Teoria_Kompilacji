@@ -26,7 +26,7 @@ class UnaryExpr(Node):
 
 
 # wyrażenia binarne
-class BinExpr(Node):
+class BinaryExpr(Node):
     def __init__(self, op, left, right):
         self.op = op
         self.left = left
