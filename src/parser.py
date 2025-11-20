@@ -90,15 +90,15 @@ class Mparser(Parser):
 
     @_("print_args ',' print_arg")
     def print_args(self, p):
-        pass
+        return p.print_args + p.print_arg
 
     @_("print_arg")
     def print_args(self, p):
-        pass
+        return p.print_arg
 
     @_("expr")
     def print_arg(self, p):
-        pass
+        return [p.expr]
 
     @_("STRING")
     def print_arg(self, p):

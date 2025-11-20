@@ -63,6 +63,10 @@ class Matrix(Expr):
     def __init__(self, rows):
         self.rows = rows
 
+# class Values(Expr):
+#     def __init__(self, values):
+#         self.values = values 
+
 
 class Assignment(Statement):
     def __init__(self, variable, op, value):
@@ -83,14 +87,16 @@ class WhileStatement(Statement):
         self.condition = condition
         self.body = body
 
+class Range(Statement):
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
 
 class ForStatement(Statement):
     def __init__(self, variable, start, end, body):
         self.variable = variable
-        self.start = start
-        self.end = end
+        self.range = Range(start, end)
         self.body = body
-
 
 class BreakStatement(Statement):
     def __init__(self):
@@ -108,11 +114,8 @@ class ReturnStatement(Statement):
 
 
 class PrintStatement(Statement):
-    def __init__(self, value):
-        self.value = value
-
-
-
+    def __init__(self, values):
+        self.values = values
 
 class Refference():
     pass

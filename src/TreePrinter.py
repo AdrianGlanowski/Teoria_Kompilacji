@@ -76,7 +76,29 @@ class TreePrinter:
         TreePrinter.safePrintTree(self.variable, indent + 1)
         TreePrinter.safePrintTree(self.reffs, indent + 1)
 
+    @addToClass(AST.ForStatement)
+    def printTree(self: AST.ForStatement, indent=0):
+        print("|  " * indent + f"FOR")
+        TreePrinter.safePrintTree(self.variable, indent + 1)
+        TreePrinter.safePrintTree(self.range, indent + 1)
+        TreePrinter.safePrintTree(self.body, indent + 1)
 
+    @addToClass(AST.Range)
+    def printTree(self: AST.Range, indent=0):
+        print("|  " * indent + f"RANGE")
+        TreePrinter.safePrintTree(self.start, indent + 1)
+        TreePrinter.safePrintTree(self.end, indent + 1)
+
+    @addToClass(AST.Block)
+    def printTree(self: AST.Block, indent=0):
+        for line in self.lines:
+            TreePrinter.safePrintTree(line, indent)
+
+    @addToClass(AST.PrintStatement)
+    def printTree(self: AST.PrintStatement, indent=0):
+        print("|  " * indent + f"PRINT")
+        for value in self.values:
+            TreePrinter.safePrintTree(value, indent)
         
     
     
