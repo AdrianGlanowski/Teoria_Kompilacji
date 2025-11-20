@@ -62,7 +62,6 @@ class Mparser(Parser):
         "if_statement",
         "while_statement",
         "for_statement",
-        "matrix_assign ';'",
     )
     def line(self, p):
         return p[0]
@@ -122,6 +121,10 @@ class Mparser(Parser):
     @_('var "=" STRING')
     def assignment(self, p):
         return AST.Assignment(p[1], p.var, p[2])
+
+    @_('matrix_reference "=" expr')
+    def assignment(self, p):
+        return AST.Assignment(p[1], p.matrix_reference, p.expr)
 
     # ---------------------------
     # warunki i petle
@@ -189,9 +192,9 @@ class Mparser(Parser):
     def expr(self, p):
         return p.matrix
 
-    @_("matrix_element")
+    @_("matrix_reference")
     def expr(self, p):
-        return p.matrix_element
+        return p.matrix_reference
 
     @_('var "\'" ')
     def expr(self, p):
@@ -252,12 +255,8 @@ class Mparser(Parser):
         return [p.expr]
 
     @_("var vector")
-    def matrix_element(self, p):
+    def matrix_reference(self, p):
         return AST.MatrixRefference(p.var, p.vector)
-
-    @_('matrix_element "=" expr')
-    def matrix_assign(self, p):
-        return AST.Assignment(p[1], p.matrix_element, p.expr)
 
     def error(self, p):
         if p:
