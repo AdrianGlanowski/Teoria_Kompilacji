@@ -1,12 +1,5 @@
-# wyrażenia binarne,
 # wyrażenia relacyjne,
-# instrukcje przypisania,
-# instrukcje warunkowe if-else,
-# pętle: while oraz for,
-# instrukcje break, continue oraz return,
-# instrukcje print,
-# instrukcje złożone,
-# tablice oraz ich zakresy.
+# if-else, while
 
 from ParserError import ParserError
 
@@ -17,6 +10,8 @@ class Program(Root):
     def __init__(self, lines):
         self.lines = lines
 
+
+# instrukcje złożone
 class Block(Root):
     def __init__(self, lines):
         self.lines = lines
@@ -37,6 +32,8 @@ class UnaryExpr(Expr):
         self.op = "MINUS" if op == "-" else "TRANSPOSE"
         self.arg = arg
 
+
+# wyrażenia binarne
 class BinExpr(Expr):
     def __init__(self, op, left, right):
         self.op = op
@@ -63,11 +60,8 @@ class Matrix(Expr):
     def __init__(self, rows):
         self.rows = rows
 
-# class Values(Expr):
-#     def __init__(self, values):
-#         self.values = values 
 
-
+# instrukcje przypisania
 class Assignment(Statement):
     def __init__(self, variable, op, value):
         self.variable = variable
@@ -75,6 +69,7 @@ class Assignment(Statement):
         self.value = value
 
 
+# instrukcje warunkowe if-else
 class IfStatement(Statement):
     def __init__(self, condition, then_branch, else_branch=None):
         self.condition = condition
@@ -82,6 +77,7 @@ class IfStatement(Statement):
         self.else_branch = else_branch
 
 
+# pętle: while oraz for
 class WhileStatement(Statement):
     def __init__(self, condition, body):
         self.condition = condition
@@ -98,21 +94,22 @@ class ForStatement(Statement):
         self.range = Range(start, end)
         self.body = body
 
+
+# instrukcje break, continue oraz return
 class BreakStatement(Statement):
     def __init__(self):
         pass
 
-
 class ContinueStatement(Statement):
     def __init__(self):
         pass
-
 
 class ReturnStatement(Statement):
     def __init__(self, value=None):
         self.value = value
 
 
+# instrukcje print
 class PrintStatement(Statement):
     def __init__(self, values):
         self.values = values
@@ -124,13 +121,14 @@ class VariableRefference(Refference):
     def __init__(self, name):
         self.name = name
 
+
+# tablice oraz ich zakresy
 class MatrixRefference(Refference):
     def __init__(self, variable, reffs):
         self.variable = variable
         if not all(isinstance(v, int) or (isinstance(v, Expr) and not (isinstance(v, FloatNum))) for v in reffs.values):
             raise ParserError("Arrays can be only refferenced by ints")
         self.reffs = reffs
-
 
 # class Error(Node):
 #     def __init__(self):
