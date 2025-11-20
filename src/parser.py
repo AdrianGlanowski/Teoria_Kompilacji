@@ -1,6 +1,18 @@
 # pyright: reportUndefinedVariable=false
 from sly import Parser
 from scanner import Scanner
+from ParserError import ParserError
+import AST
+
+# wyrażenia binarne,
+# wyrażenia relacyjne,
+# instrukcje przypisania,
+# instrukcje warunkowe if-else,
+# pętle: while oraz for,
+# instrukcje break, continue oraz return,
+# instrukcje print,
+# instrukcje złożone,
+# tablice oraz ich zakresy.
 
 
 class Mparser(Parser):
@@ -30,17 +42,17 @@ class Mparser(Parser):
     # program to ciąg linijek (lines)
     @_("lines")
     def program(self, p):
-        pass
+        return AST.Program(p.lines)
 
     # ---------------------------
     # lines
     @_("line lines")
     def lines(self, p):
-        pass
+        return [p.line] + p.lines
 
     @_("")
     def lines(self, p):
-        pass
+        return []
 
     # ---------------------------
     # line
@@ -52,7 +64,7 @@ class Mparser(Parser):
         "for_statement",
     )
     def line(self, p):
-        pass
+        return p[0]
 
     # ---------------------------
     # statements
@@ -60,255 +72,191 @@ class Mparser(Parser):
     # BREAK I CONTINUE DZIALA WSZEDZIE, A POWINIEN TYLKO W PETLI
     @_("BREAK")
     def statement(self, p):
-        pass
+        return AST.BreakStatement()
 
     @_("CONTINUE")
     def statement(self, p):
-        pass
+        return AST.ContinueStatement()
+
+    @_("RETURN")
+    def statement(self, p):
+        return AST.ReturnStatement()
 
     @_("RETURN expr")
     def statement(self, p):
-        pass
+        return AST.ReturnStatement(p.expr)
 
     @_("PRINT print_args")
     def statement(self, p):
-        pass
+        return AST.PrintStatement(p[1])
 
     @_("print_args ',' print_arg")
     def print_args(self, p):
-        pass
+        return p.print_args + p.print_arg
 
     @_("print_arg")
     def print_args(self, p):
-        pass
+        return p.print_arg
 
     @_("expr")
     def print_arg(self, p):
-        pass
+        return [p.expr]
 
     @_("STRING")
     def print_arg(self, p):
-        pass
+        return [str(p[0])]
 
     # ---------------------------
     # assignments
-    @_('var "=" expr', 'var "=" STRING')
+    @_(
+        'var "=" expr',
+        "var ADD_ASSIGN expr",
+        "var SUB_ASSIGN expr",
+        "var MUL_ASSIGN expr",
+        "var DIV_ASSIGN expr",
+    )
     def assignment(self, p):
-        pass
+        return AST.Assignment(p[1], p.var, p.expr)
 
-    @_("var ADD_ASSIGN expr")
+    @_('var "=" STRING')
     def assignment(self, p):
-        pass
+        return AST.Assignment(p[1], p.var, p[2])
 
-    @_("var SUB_ASSIGN expr")
+    @_('matrix_reference "=" expr')
     def assignment(self, p):
-        pass
-
-    @_("var MUL_ASSIGN expr")
-    def assignment(self, p):
-        pass
-
-    @_("var DIV_ASSIGN expr")
-    def assignment(self, p):
-        pass
+        return AST.Assignment(p[1], p.matrix_reference, p.expr)
 
     # ---------------------------
     # warunki i petle
     # pomysl: osobny if dla petli
     @_('IF "(" condition ")" block %prec IFX')
     def if_statement(self, p):
-        pass
+        return AST.IfStatement(p.condition, p.block)
 
     @_('IF "(" condition ")" block ELSE block')
     def if_statement(self, p):
-        pass
-
-    # @_("if_statement ELSE if_statement")
-    # def if_statement(self, p):
-    #     pass
+        return AST.IfStatement(p.condition, p.block0, p.block1)
 
     @_('WHILE "(" condition ")" block')
     def while_statement(self, p):
-        pass
+        return AST.WhileStatement(p.condition, p.block)
 
     @_('FOR var "=" expr ":" expr block')
     def for_statement(self, p):
-        pass
+        return AST.ForStatement(p.var, p.expr0, p.expr1, p.block)
 
     # ---------------------------
     # blok
-    @_("line", '"{" lines "}"')
+    @_("line")
     def block(self, p):
-        pass
+        return AST.Block([p.line])
+
+    @_('"{" lines "}"')
+    def block(self, p):
+        return AST.Block(p.lines)
 
     # ---------------------------
     # condition
     @_('">"', '"<"', "EQ", "NEQ", "GTE", "LTE")
     def comp_op(self, p):
-        pass
+        return p[0]
 
     @_("expr comp_op expr")
     def condition(self, p):
-        pass
+        return AST.Condition(p.comp_op, p.expr0, p.expr1)
 
     # ---------------------------
     # expressions
     @_('"-" expr %prec UMINUS')
     def expr(self, p):
-        pass
+        return AST.UnaryExpr(p[0], p.expr)
 
-    @_('expr "+" expr')
+    @_(
+        'expr "+" expr',
+        'expr "-" expr',
+        'expr "*" expr',
+        'expr "/" expr',
+        "expr DOT_ADD expr",
+        "expr DOT_SUB expr",
+        "expr DOT_MUL expr",
+        "expr DOT_DIV expr",
+    )
     def expr(self, p):
-        pass
-
-    @_("expr DOT_ADD expr")
-    def expr(self, p):
-        pass
-
-    @_('expr "-" expr')
-    def expr(self, p):
-        pass
-
-    @_("expr DOT_SUB expr")
-    def expr(self, p):
-        pass
-
-    @_('expr "*" expr')
-    def expr(self, p):
-        pass
-
-    @_("expr DOT_MUL expr")
-    def expr(self, p):
-        pass
-
-    @_('expr "/" expr')
-    def expr(self, p):
-        pass
-
-    @_("expr DOT_DIV expr")
-    def expr(self, p):
-        pass
+        return AST.BinaryExpr(p[1], p[0], p[2])
 
     @_('"(" expr ")"')
     def expr(self, p):
-        pass
+        return p.expr
 
     @_("matrix")
     def expr(self, p):
-        pass
+        return p.matrix
 
-    @_("matrix_element")
+    @_("matrix_reference")
     def expr(self, p):
-        pass
+        return p.matrix_reference
 
     @_('var "\'" ')
     def expr(self, p):
-        pass
+        return AST.UnaryExpr(p[1], p.var)
 
     @_("INTNUM")
     def expr(self, p):
-        pass
+        return AST.IntNum(p[0])
 
     @_("FLOATNUM")
     def expr(self, p):
-        pass
+        return AST.FloatNum(p[0])
 
     @_("var")
     def expr(self, p):
-        pass
+        return p.var
 
     # ---------------------------
     # variable
     @_("ID")
     def var(self, p):
-        pass
+        return AST.Id(p[0])
 
     # ---------------------------
     # matrix
     @_('matrix "\'"')
     def matrix(self, p):
-        pass
+        return AST.UnaryExpr(p[1], p.matrix)
 
-    # matrix_style_1 -> example1.m
-    # @_('"[" "]"')
-    # def matrix(self, p):
-    #     pass
-
-    # @_("matrix1")
-    # def matrix(self, p):
-    #     pass
-
-    # @_('"[" rows1 "]"')
-    # def matrix1(self, p):
-    #     pass
-
-    # @_('rows1 ";" row')
-    # def rows1(self, p):
-    #     pass
-
-    # @_("row")
-    # def rows1(self, p):
-    #     pass
-
-    # matrix_style_2 -> example.txt
-    @_("matrix2")
+    @_('"[" vectors "]"')
     def matrix(self, p):
-        pass
+        return AST.Matrix(p.vectors)
 
-    @_('"[" rows2 "]"')
-    def matrix2(self, p):
-        pass
+    # matrix creation with functions
+    @_('ZEROS "(" INTNUM ")"', 'ONES "(" INTNUM ")"', 'EYE "(" INTNUM ")"')
+    def matrix(self, p):
+        return AST.FunctionCall(p[0], p[2])
 
-    @_('rows2 "," "[" row "]"')
-    def rows2(self, p):
-        pass
+    @_('vectors "," vector')
+    def vectors(self, p):
+        return p.vectors + [p.vector]
+
+    @_("vector")
+    def vectors(self, p):
+        return [p.vector]
 
     @_('"[" row "]"')
-    def rows2(self, p):
-        pass
+    def vector(self, p):
+        return AST.Vector(p.row)
 
     # rows
     @_('row "," expr')
     def row(self, p):
-        pass
+        return p.row + [p.expr]
 
     @_("expr")
     def row(self, p):
-        pass
+        return [p.expr]
 
-    # matrix creation with functions
-    @_('ZEROS "(" INTNUM ")"')
-    def matrix(self, p):
-        pass
-
-    @_('ONES "(" INTNUM ")"')
-    def matrix(self, p):
-        pass
-
-    @_('EYE "(" INTNUM ")"')
-    def matrix(self, p):
-        pass
-
-    # matrix assignment
-    @_('matrix_assign ";"')
-    def line(self, p):
-        pass
-
-    @_('var "[" indices "]" ')
-    def matrix_element(self, p):
-        pass
-
-    @_('matrix_element "=" expr')
-    def matrix_assign(self, p):
-        pass
-
-    @_("expr")
-    def indices(self, p):
-        pass
-
-    @_('expr "," indices')
-    def indices(self, p):
-        pass
+    @_("var vector")
+    def matrix_reference(self, p):
+        return AST.MatrixRefference(p.var, p.vector)
 
     def error(self, p):
         if p:
@@ -317,3 +265,4 @@ class Mparser(Parser):
             )
         else:
             print(f"{'\033[91m'}Syntax error at end of input{'\033[0m'}")
+        raise ParserError
