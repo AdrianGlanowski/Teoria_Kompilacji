@@ -1,6 +1,7 @@
 import sys
 from scanner import Scanner
 from parser import Mparser
+from TreePrinter import TreePrinter
 from ParserError import ParserError
 
 
@@ -16,8 +17,12 @@ if __name__ == '__main__':
 
     try:
         ast = parser.parse(lexer.tokenize(text))
-    except ParserError:
+    except ParserError as pe:
         print(
                 f"{'\033[91m'}File couldn't be parsed, aborting.{'\033[0m'}"
             )
-    # ast.printTree()
+        if pe.args:
+            print(f"\033[91mReason: {pe}\033[0m")
+        
+        exit(1)
+    ast.printTree()

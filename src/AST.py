@@ -8,30 +8,60 @@
 # instrukcje złożone,
 # tablice oraz ich zakresy.
 
+from ParserError import ParserError
 
 class Root:
     pass
 
+class Program(Root):
+    def __init__(self, lines):
+        self.lines = lines
 
-class Statement(Root):
+class Block(Root):
+    def __init__(self, lines):
+        self.lines = lines
+
+class Statement(Program):
     pass
 
+class Function(Statement):
+    def __init__(self, name, args):
+        self.name = name
+        self.args = args
 
-class BinExpr(Statement):
+class Expr(Statement):
+    pass
+
+class UnaryExpr(Expr):
+    def __init__(self, op, arg):
+        self.op = "MINUS" if op == "-" else "TRANSPOSE"
+        self.arg = arg
+
+class BinExpr(Expr):
     def __init__(self, op, left, right):
         self.op = op
         self.left = left
         self.right = right
 
-
-class IntNum(BinExpr):
+class IntNum(Expr):
     def __init__(self, value):
         self.value = value
 
-
-class FloatNum(BinExpr):
+class FloatNum(Expr):
     def __init__(self, value):
         self.value = value
+
+class Variable(Expr):
+    def __init__(self, name):
+        self.name = name
+
+class Vector(Expr):
+    def __init__(self, values):
+        self.values = values
+
+class Matrix(Expr):
+    def __init__(self, rows):
+        self.rows = rows
 
 
 class Assignment(Statement):
@@ -84,34 +114,19 @@ class PrintStatement(Statement):
 
 
 
-# class Variable(Node):
-#     def __init__(self, name):
-#         self.name = name
+class Refference():
+    pass
 
+class VariableRefference(Refference):
+    def __init__(self, name):
+        self.name = name
 
-# class Condition(Node):
-#     def __init__(self, op, left, right):
-#         self.op = op
-#         self.left = left
-#         self.right = right
-
-
-# class Array(Node):
-#     def __init__(self, elements):
-#         self.elements = elements
-
-
-# class Block(Node):
-#     def __init__(self, statements):
-#         self.statements = statements
-
-
-# class ArrayRange(Node):
-#     def __init__(self, array, start, end):
-#         self.array = array
-#         self.start = start
-#         self.end = end
-
+class MatrixRefference(Refference):
+    def __init__(self, variable, reffs):
+        self.variable = variable
+        if not all(isinstance(v, int) or (isinstance(v, Expr) and not (isinstance(v, FloatNum))) for v in reffs.values):
+            raise ParserError("Arrays can be only refferenced by ints")
+        self.reffs = reffs
 
 
 # class Error(Node):

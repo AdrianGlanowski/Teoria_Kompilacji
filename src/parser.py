@@ -43,7 +43,7 @@ class Mparser(Parser):
     # program to ciąg linijek (lines)
     @_("lines")
     def program(self, p):
-        return p.lines
+        return AST.Program(p.lines)
 
     # ---------------------------
     # lines
@@ -66,7 +66,7 @@ class Mparser(Parser):
         "matrix_assign ';'"
     )
     def line(self, p):
-        pass
+        return p[0]
 
     # ---------------------------
     # statements
@@ -107,13 +107,18 @@ class Mparser(Parser):
     # ---------------------------
     # assignments
     @_('var "=" expr',
-       'var "=" STRING',
        'var ADD_ASSIGN expr',
        'var SUB_ASSIGN expr',
        'var MUL_ASSIGN expr',
        'var DIV_ASSIGN expr')
     def assignment(self, p):
+        return AST.Assignment(p.var, p[1], p.expr)
+    
+    
+    @_('var "=" STRING')
+    def assignment(self, p):
         return AST.Assignment(p.var, p[1], p[2])
+        
 
 
     # ---------------------------
@@ -140,11 +145,11 @@ class Mparser(Parser):
     # blok
     @_("line")
     def block(self, p):
-        return [p.line]
+        return AST.Block([p.line])
     
     @_('"{" lines "}"')
     def block(self, p):
-        return p.lines
+        return AST.Block(p.lines)
 
     # ---------------------------
     # condition
@@ -160,7 +165,7 @@ class Mparser(Parser):
     # expressions
     @_('"-" expr %prec UMINUS')
     def expr(self, p):
-        pass
+        return AST.UnaryExpr(p[0], p.expr)
 
     @_('expr "+" expr',
        'expr "-" expr',
@@ -180,23 +185,27 @@ class Mparser(Parser):
 
     @_("matrix")
     def expr(self, p):
-        pass
+        return p.matrix
 
+    @_("matrix_function")
+    def expr(self, p):
+        return p.matrix_function
+        
     @_("matrix_element")
     def expr(self, p):
-        pass
+        return p.matrix_element
 
     @_('var "\'" ')
     def expr(self, p):
-        pass
+        return AST.UnaryExpr(p[1], p.var)
 
     @_("INTNUM")
     def expr(self, p):
-        return int(p[0])
+        return AST.IntNum(p[0])
 
     @_("FLOATNUM")
     def expr(self, p):
-        return float(p[0])
+        return AST.FloatNum(p[0])
 
     @_("var")
     def expr(self, p):
@@ -206,59 +215,53 @@ class Mparser(Parser):
     # variable
     @_("ID")
     def var(self, p):
-        return p[0]
+        return AST.VariableRefference(p[0])
 
     # ---------------------------
     # matrix
     @_('matrix "\'"')
     def matrix(self, p):
-        pass
+        return AST.UnaryExpr(p[1], p.matrix)
 
     @_('"[" vectors "]"')
     def matrix(self, p):
-        pass
+        return AST.Matrix(p.vectors)
 
     @_('vectors "," vector')
     def vectors(self, p):
-        pass
+        return p.vectors + [p.vector]
 
     @_('vector')
     def vectors(self, p):
-        pass
+        return [p.vector]
 
     @_('"[" row "]"')
     def vector(self, p):
-        pass
+        return AST.Vector(p.row)
 
     # rows
     @_('row "," expr')
     def row(self, p):
-        pass
+        return p.row + [p.expr]
 
     @_("expr")
     def row(self, p):
-        pass
+        return [p.expr]
 
     # matrix creation with functions
-    @_('ZEROS "(" INTNUM ")"')
-    def matrix(self, p):
-        pass
-
-    @_('ONES "(" INTNUM ")"')
-    def matrix(self, p):
-        pass
-
-    @_('EYE "(" INTNUM ")"')
-    def matrix(self, p):
-        pass
+    @_('ZEROS "(" INTNUM ")"',
+       'ONES "(" INTNUM ")"',
+       'EYE "(" INTNUM ")"')
+    def matrix_function(self, p):
+        return AST.Function(p[0], p[2])
 
     @_('var vector')
     def matrix_element(self, p):
-        pass
+        return AST.MatrixRefference(p.var, p.vector)
 
     @_('matrix_element "=" expr')
     def matrix_assign(self, p):
-        pass
+        return AST.Assignment(p.matrix_element, p[1], p.expr)
 
     def error(self, p):
         if p:
