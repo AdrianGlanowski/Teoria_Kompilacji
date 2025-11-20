@@ -1,6 +1,7 @@
 *.pdf
 *.txt
 *.out
+/.vscode/
 !*/examples/*.txt
 
 # Byte-compiled / optimized / DLL files
