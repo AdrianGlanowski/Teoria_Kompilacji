@@ -1,4 +1,3 @@
-# wyrażenia relacyjne,
 # if-else, while
 
 from ParserError import ParserError
@@ -34,7 +33,7 @@ class UnaryExpr(Expr):
 
 
 # wyrażenia binarne
-class BinExpr(Expr):
+class BinaryExpr(Expr):
     def __init__(self, op, left, right):
         self.op = op
         self.left = left
@@ -68,6 +67,12 @@ class Assignment(Statement):
         self.op = op
         self.value = value
 
+
+# wyrażenia relacyjne,
+class RelationExpr():
+    def __init__(self, left, op, right):
+        #TODO
+        pass
 
 # instrukcje warunkowe if-else
 class IfStatement(Statement):

@@ -176,7 +176,7 @@ class Mparser(Parser):
        "expr DOT_MUL expr",
        "expr DOT_DIV expr")
     def expr(self, p):
-        return AST.BinExpr(p[1], p[0], p[2])
+        return AST.BinaryExpr(p[1], p[0], p[2])
 
 
     @_('"(" expr ")"')

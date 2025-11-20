@@ -30,8 +30,8 @@ class TreePrinter:
         TreePrinter.safePrintTree(self.variable, indent + 1)
         TreePrinter.safePrintTree(self.value, indent + 1)
     
-    @addToClass(AST.BinExpr)
-    def printTree(self: AST.BinExpr, indent=0):
+    @addToClass(AST.BinaryExpr)
+    def printTree(self: AST.BinaryExpr, indent=0):
         print("|  " * indent + f"{self.op}")
         TreePrinter.safePrintTree(self.left, indent + 1)
         TreePrinter.safePrintTree(self.right, indent + 1)
@@ -97,6 +97,12 @@ class TreePrinter:
     @addToClass(AST.PrintStatement)
     def printTree(self: AST.PrintStatement, indent=0):
         print("|  " * indent + f"PRINT")
+        for value in self.values:
+            TreePrinter.safePrintTree(value, indent)
+    
+    @addToClass(AST.IfStatement)
+    def printTree(self: AST.IfStatement, indent=0):
+        print("|  " * indent + f"IF")
         for value in self.values:
             TreePrinter.safePrintTree(value, indent)
         
