@@ -3,13 +3,14 @@ Interpreter napisany własnoręcznie w ramach przedmiotu Teoria Kompilacji na 5 
 Implementacja spełnia [wymagania przedstawione za zajęciach](https://home.agh.edu.pl/~mkuta/tklab/).
 
 ---
-## [Lexer](https://github.com/AdrianGlanowski/Teoria_Kompilacji/blob/main/src/scanner.py)
+## [Lexer](src/scanner.py)
 Skaner przetwarzający tekst wejściowy na listę tokenów, w przypadku nierozpoznania tokenu wypisywany jest błąd.
 
 ---
-## [Parser](https://github.com/AdrianGlanowski/Teoria_Kompilacji/blob/main/src/parser.py)
+## [Parser](src/parser.py)
 Parser budujący gramatykę języka.
 
 ---
 ## [AST](src/AST.py)
 Moduł do tworzenia drzewa syntaktycznego (Abstract Syntax Tree).
+
