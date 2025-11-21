@@ -11,9 +11,7 @@ class TreePrinter:
     def safePrintTree(obj, indent):
         """Helper function to handle primitives and objects with `printTree`."""
         prefix = "|  " * indent
-        if isinstance(obj, (int, float, str)):
-            print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{prefix}{obj}")
-        elif obj is not None:
+        if obj is not None:
             obj.printTree(indent)
         else:
             print(f"{prefix}None")
