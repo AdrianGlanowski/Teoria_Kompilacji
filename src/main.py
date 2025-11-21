@@ -1,4 +1,5 @@
 import sys
+from TypeChecker import TypeChecker
 from scanner import Scanner
 from parser import Mparser
 from TreePrinter import TreePrinter
@@ -25,4 +26,13 @@ if __name__ == '__main__':
             print(f"\033[91mReason: {pe}\033[0m")
         
         exit(1)
-    ast.printTree()
+    # ast.printTree()
+
+
+    # Below code shows how to use visitor
+    typeChecker = TypeChecker()   
+    typeChecker.visit(ast)   # or alternatively ast.accept(typeChecker)
+    
+
+
+
