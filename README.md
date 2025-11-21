@@ -9,3 +9,7 @@ Skaner przetwarzający tekst wejściowy na listę tokenów, w przypadku nierozpo
 ---
 ## [Parser](https://github.com/AdrianGlanowski/Teoria_Kompilacji/blob/main/src/parser.py)
 Parser budujący gramatykę języka.
+
+---
+## [AST](src/AST.py)
+Moduł do tworzenia drzewa syntaktycznego (Abstract Syntax Tree).
