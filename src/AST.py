@@ -43,6 +43,11 @@ class FloatNum(Node):
         self.value = value
 
 
+class String(Node):
+    def __init__(self, value):
+        self.value = value
+
+
 class Vector(Node):
     def __init__(self, values):
         self.values = values
@@ -65,12 +70,6 @@ class Assignment(Node):
         self.variable = variable
         self.value = value
 
-
-# wyrażenia relacyjne,
-class RelationExpr():
-    def __init__(self, left, op, right):
-        #TODO
-        pass
 
 # instrukcje warunkowe if-else
 class IfStatement(Node):
@@ -132,6 +131,7 @@ class Condition(Node):
         self.op = op
         self.left = left
         self.right = right
+
 
 # class Error(Node):
 #     def __init__(self):
