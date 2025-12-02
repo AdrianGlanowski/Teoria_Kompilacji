@@ -28,12 +28,9 @@ class Mparser(Parser):
     precedence = (
         ("nonassoc", "IFX"),
         ("nonassoc", "ELSE"),
-        ("right", "MUL_ASSIGN", "DIV_ASSIGN", "SUB_ASSIGN", "ADD_ASSIGN"),
         ("nonassoc", "<", ">", "LTE", "GTE", "NEQ", "EQ"),
-        ("left", "+", "-"),
-        ("left", "*", "/"),
-        ("left", "DOT_ADD", "DOT_SUB"),
-        ("left", "DOT_MUL", "DOT_DIV"),
+        ("left", "+", "-", "DOT_ADD", "DOT_SUB"),
+        ("left", "*", "/", "DOT_MUL", "DOT_DIV"),
         ("right", "UMINUS"),
         ("left", "'"),
     )
@@ -104,7 +101,7 @@ class Mparser(Parser):
 
     @_("STRING")
     def print_arg(self, p):
-        return [str(p[0])]
+        return [AST.String(p[0])]
 
     # ---------------------------
     # assignments
@@ -120,7 +117,7 @@ class Mparser(Parser):
 
     @_('var "=" STRING')
     def assignment(self, p):
-        return AST.Assignment(p[1], p.var, p[2])
+        return AST.Assignment(p[1], p.var, AST.String(p[2]))
 
     @_('matrix_reference "=" expr')
     def assignment(self, p):
@@ -231,7 +228,7 @@ class Mparser(Parser):
     # matrix creation with functions
     @_('ZEROS "(" INTNUM ")"', 'ONES "(" INTNUM ")"', 'EYE "(" INTNUM ")"')
     def matrix(self, p):
-        return AST.FunctionCall(p[0], p[2])
+        return AST.FunctionCall(p[0], AST.IntNum(p[2]))
 
     @_('vectors "," vector')
     def vectors(self, p):
