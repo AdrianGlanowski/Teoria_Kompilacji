@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import AST
+from SymbolTable import SymbolTable
 
 
 class NodeVisitor(object):
@@ -25,6 +26,9 @@ class NodeVisitor(object):
 
 
 class TypeChecker(NodeVisitor):
+
+    def __init__(self):
+        self.symbol_table = SymbolTable()
 
     def visit_Program(self, node):
         for line in node.lines:
@@ -87,7 +91,8 @@ class TypeChecker(NodeVisitor):
             else:
                 raise TypeError(f"Unsupported operand types for {node.op}: '{type_left}' and '{type_right}'")
         
-        if node.op in ['DOT_ADD', 'DOT_SUB', 'DOT_MUL', 'DOT_DIV']:
+        if node.op in ['.+', '.-', '.*', './']:
+            print("jestem tu")
             if (type_left == "matrix" and type_right == "matrix"):
                 if node.left.shape != node.right.shape:
                     raise TypeError("Cannot operate on matrices with different shapes.")
@@ -120,12 +125,15 @@ class TypeChecker(NodeVisitor):
 
     def visit_Id(self, node):
         #return current var type?
-        return 'var'
+        var_type = self.symbol_table.get_type(node.name)
+        print(var_type)
+        return var_type
 
     def visit_Assignment(self, node):
+
         if node.op == "=":
-            self.visit(node.variable)
-            self.visit(node.value)
+            value_type = self.visit(node.value)
+            self.symbol_table.add(node.variable.name, value_type, node.value.shape if value_type == "matrix" else None)
         #czy mozna zrobic binary expr aktualnego typu vara z value?
         
 
