@@ -61,8 +61,7 @@ class TypeChecker(NodeVisitor):
     def visit_BinaryExpr(self, node):
 
         type_left = self.visit(node.left)  
-        type_right = self.visit(node.right) 
-        print(type_left, type_right)
+        type_right = self.visit(node.right)
 
         if node.op == "*":
             if type_left == type_right == "matrix":
@@ -93,8 +92,6 @@ class TypeChecker(NodeVisitor):
                 raise TypeError(f"Unsupported operand types for {node.op}: '{type_left}' and '{type_right}'")
         
         if node.op in ['.+', '.-', '.*', './']:
-            print(node.left, node.right)
-            print("jestem tu")
             if (type_left == "matrix" and type_right == "matrix"):
                 if node.left.shape != node.right.shape:
                     raise TypeError("Cannot operate on matrices with different shapes.")
@@ -122,6 +119,15 @@ class TypeChecker(NodeVisitor):
             if len(node.rows[i].values) != row_length:
                 raise TypeError("Cannot initialize matrix with different row length.")
         node.shape = (len(node.rows), row_length)
+
+        first_element_type = self.visit(node.rows[0].values[0])
+        for row in node.rows:
+            for val in row.values:
+                element_type = self.visit(val)
+                if element_type != first_element_type:
+                    raise TypeError("All elements of the matrix must be of the same type.")
+                
+        node.stored_type = first_element_type
         
         return 'matrix'
 
@@ -145,8 +151,15 @@ class TypeChecker(NodeVisitor):
 
         if node.op == "=":
             value_type = self.visit(node.value)
-            shape = getattr(node.value, 'shape', None)
-            self.symbol_table.put(node.variable.name, value_type, shape)
+
+            if isinstance(node.variable, AST.MatrixRefference):
+                self.visit(node.variable)
+            else:
+                shape = getattr(node.value, 'shape', None)
+                stored_type = getattr(node.value, 'stored_type', None)
+                self.symbol_table.put(node.variable.name, value_type, shape, stored_type)
+
+
         #czy mozna zrobic binary expr aktualnego typu vara z value?
         
 
@@ -187,14 +200,21 @@ class TypeChecker(NodeVisitor):
             #     raise TypeError(f"")
             
     def visit_MatrixRefference(self, node):
-        #visit id - czy jest macierza?
-        #ogolnie co tu zrobic?
+        symbol = self.symbol_table.get(node.variable.name)
         
         if len(node.reffs.values) != 2:
             raise TypeError("Matrix refference has to be 2 dimentional.")
-        #czy referencja jest w zakresie
-        # if node.reffs.values[0].value 
-        return
+
+        type1 = self.visit(node.reffs.values[0])
+        type2 = self.visit(node.reffs.values[1])
+
+        if type1 != "int" or type2 != "int":
+            raise TypeError("Matrix refference indices have to be of type int.")
+        
+        if node.reffs.values[0].value >= symbol.shape[0] or node.reffs.values[1].value >= symbol.shape[1]:
+            raise TypeError("Matrix refference out of bounds.")
+        
+        return symbol.stored_type
     
     def visit_Condition(self, node):
         left_type = self.visit(node.left)

@@ -57,6 +57,7 @@ class Matrix(Node):
     def __init__(self, rows):
         self.rows = rows
         self.shape = None
+        self.stored_type = None
 
 
 class Id(Node):

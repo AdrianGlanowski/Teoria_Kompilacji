@@ -2,11 +2,17 @@
 
 
 class VariableSymbol:
+    def __init__(self, name, type):
+        self.name = name
+        self.type = type
 
-    def __init__(self, name, type, shape):
+
+class MatrixSymbol:
+    def __init__(self, name, type, shape, stored_type):
         self.name = name
         self.type = type
         self.shape = shape
+        self.stored_type = stored_type
 
 class Scope:
     symbols = dict()
@@ -15,14 +21,17 @@ class Scope:
         self.parent = parent
         self.level = level
 
-    def put(self, name, type, shape):
-        self.symbols[name] = VariableSymbol(name, type, shape)
+    def put(self, name, type):
+        self.symbols[name] = VariableSymbol(name, type)
     
     def get(self, name):
         return self.symbols[name]
 
     def get_parent(self):
         return self.parent
+    
+    def put(self, name, type, shape, stored_type):
+        self.symbols[name] = MatrixSymbol(name, type, shape, stored_type)
 
 
 class SymbolTable:
@@ -39,6 +48,9 @@ class SymbolTable:
     def get(self, name):
         return self.current_scope.get(name)
     
-    def put(self, name, type, shape):
-        self.current_scope.put(name, type, shape)
+    def put(self, name, type):
+        self.current_scope.put(name, type)
+
+    def put(self, name, type, shape, stored_type):
+        self.current_scope.put(name, type, shape, stored_type)
 
