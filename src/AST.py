@@ -35,12 +35,12 @@ class BinaryExpr(Node):
 
 class IntNum(Node):
     def __init__(self, value):
-        self.value = value
+        self.value = int(value)
 
 
 class FloatNum(Node):
     def __init__(self, value):
-        self.value = value
+        self.value = float(value)
 
 
 class String(Node):
@@ -56,6 +56,7 @@ class Vector(Node):
 class Matrix(Node):
     def __init__(self, rows):
         self.rows = rows
+        self.shape = None
 
 
 class Id(Node):
