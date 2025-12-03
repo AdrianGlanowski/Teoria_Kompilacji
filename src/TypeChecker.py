@@ -62,6 +62,7 @@ class TypeChecker(NodeVisitor):
 
         type_left = self.visit(node.left)  
         type_right = self.visit(node.right) 
+        print(type_left, type_right)
 
         if node.op == "*":
             if type_left == type_right == "matrix":
@@ -92,6 +93,7 @@ class TypeChecker(NodeVisitor):
                 raise TypeError(f"Unsupported operand types for {node.op}: '{type_left}' and '{type_right}'")
         
         if node.op in ['.+', '.-', '.*', './']:
+            print(node.left, node.right)
             print("jestem tu")
             if (type_left == "matrix" and type_right == "matrix"):
                 if node.left.shape != node.right.shape:
@@ -125,15 +127,26 @@ class TypeChecker(NodeVisitor):
 
     def visit_Id(self, node):
         #return current var type?
-        var_type = self.symbol_table.get_type(node.name)
-        print(var_type)
-        return var_type
+
+        var_symbol = self.symbol_table.get(node.name)
+        if not var_symbol:
+            raise TypeError(f"Niezadeklarowana zmienna: '{node.name}'.")
+        
+        print(var_symbol)
+
+        # TO DODAJE DYNAMICZNIE TYPE I SHAPE DO AST.Id
+        node.type = var_symbol.type
+        node.shape = var_symbol.shape
+        # MIMO ZE TE POLA NIE ISTNIEJA W KLASIE AST.Id
+
+        return var_symbol.type
 
     def visit_Assignment(self, node):
 
         if node.op == "=":
             value_type = self.visit(node.value)
-            self.symbol_table.add(node.variable.name, value_type, node.value.shape if value_type == "matrix" else None)
+            shape = getattr(node.value, 'shape', None)
+            self.symbol_table.put(node.variable.name, value_type, shape)
         #czy mozna zrobic binary expr aktualnego typu vara z value?
         
 
