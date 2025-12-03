@@ -10,8 +10,7 @@ class NodeVisitor(object):
         visitor = getattr(self, method, self.generic_visit)
         return visitor(node)
 
-
-    def generic_visit(self, node):        # Called if no explicit visitor function exists for a node.
+    def generic_visit(self, node):        
         if isinstance(node, list):
             for elem in node:
                 self.visit(elem)
@@ -23,12 +22,6 @@ class NodeVisitor(object):
                             self.visit(item)
                 elif isinstance(child, AST.Node):
                     self.visit(child)
-
-    # simpler version of generic_visit, not so general
-    #def generic_visit(self, node):
-    #    for child in node.children:
-    #        self.visit(child)
-
 
 
 class TypeChecker(NodeVisitor):
@@ -42,10 +35,10 @@ class TypeChecker(NodeVisitor):
             self.visit(line)
 
     def visit_FunctionCall(self, node):
-        arg_type = self.visit(node.args)
+        arg_type = self.visit(node.arg)
         if arg_type != "int":
             raise TypeError(f"Argument of a {node.name} function has to be of type int.")
-        if node.args.value <= 0:
+        if node.arg.value <= 0:
             raise TypeError(f"Argument of a {node.name} function has to be positive.")
         return "matrix"
 
@@ -55,6 +48,7 @@ class TypeChecker(NodeVisitor):
             if arg_type == "str":
                 raise TypeError(f"Argument of negation can not be type str.")
             return arg_type
+        #transpose
         else:
             if arg_type != "matrix":
                 raise TypeError(f"Argument of transposition has to be matrix.")
@@ -67,6 +61,8 @@ class TypeChecker(NodeVisitor):
 
         if node.op == "*":
             if type_left == type_right == "matrix":
+                if node.left.shape[1] != node.right.shape[0]:
+                    raise TypeError("Number of columns in the first matrix does not equal the number of rows in the second matrix.")
                 return "matrix"
             elif (type_left in ["int", "float"] and type_right == "matrix") or (type_left == "matrix" and type_right in ["int", "float"]):
                 return "matrix"
@@ -80,7 +76,6 @@ class TypeChecker(NodeVisitor):
         if node.op == "/":
             if type_left == "matrix" and type_right in ["int", "float"]:
                 return "matrix"
-            #co z result = int/int? czy int(result), wiec int jak w C czy float czy jak?
             elif type_left in ["int", "float"] and type_right in ["int", "float"]:
                 return "float"
             
@@ -89,17 +84,16 @@ class TypeChecker(NodeVisitor):
                 return 'int'
             elif type_left in ["int", "float"] and type_right in ["int", "float"]:
                 return 'float'
-            elif type_left == type_right == "matrix":
-                return "matrix"
             else:
                 raise TypeError(f"Unsupported operand types for {node.op}: '{type_left}' and '{type_right}'")
         
         if node.op in ['DOT_ADD', 'DOT_SUB', 'DOT_MUL', 'DOT_DIV']:
             if (type_left == "matrix" and type_right == "matrix"):
-                #TODO wymiary macierzy dla operacji
+                if node.left.shape != node.right.shape:
+                    raise TypeError("Cannot operate on matrices with different shapes.")
                 return 'matrix'
             else:
-                raise TypeError(f"Arguments for matrix operation have to be matrixes, provided: {type_left} and {type_right}.")
+                raise TypeError(f"Arguments for matrix operation have to be matrices, provided: {type_left} and {type_right}.")
 
     def visit_IntNum(self, node):
         return 'int'
@@ -112,14 +106,15 @@ class TypeChecker(NodeVisitor):
     
     def visit_Vector(self, node):
         #teoretycznie nie mamy takiego typu, wiec co tu zrobic, moze po prostu return? 
-        return 'vector'
+        print(node.values)
+        return  
 
     def visit_Matrix(self, node):
-        column_count = len(node.rows[0].values)
+        row_length = len(node.rows[0].values)
         for i in range(1, len(node.rows)):
-            if len(node.rows[i].values) != column_count:
+            if len(node.rows[i].values) != row_length:
                 raise TypeError("Cannot initialize matrix with different row length.")
-        node.shape = (len(node.rows), column_count)
+        node.shape = (len(node.rows), row_length)
         
         return 'matrix'
 
@@ -129,8 +124,10 @@ class TypeChecker(NodeVisitor):
 
     def visit_Assignment(self, node):
         if node.op == "=":
+            self.visit(node.variable)
             self.visit(node.value)
         #czy mozna zrobic binary expr aktualnego typu vara z value?
+        
 
     def visit_IfStatement(self, node):
         self.visit(node.condition)
@@ -149,15 +146,15 @@ class TypeChecker(NodeVisitor):
 
     def visit_ForStatement(self, node):
         #czy visit variable?
-        self.visit(node.variable)
+        # self.visit(node.variable)
         self.visit(node.range)
         self.visit(node.body)
 
-    def visit_BreakStatement(self, node):
-        return
+    # def visit_BreakStatement(self, node):
+    #     return
     
-    def visit_ContinueStatement(self, node):
-        return
+    # def visit_ContinueStatement(self, node):
+    #     return
 
     def visit_ReturnStatement(self, node):
         self.visit(node.value)
@@ -165,31 +162,36 @@ class TypeChecker(NodeVisitor):
     def visit_PrintStatement(self, node):
         for element in self.values:
             type = self.visit(element)
-            if type != None: #czego nie mozna wyprintowac?
-                raise TypeError(f"")
+            # if type != None: #czego nie mozna wyprintowac?
+            #     raise TypeError(f"")
             
-    #co z wektorami?
-
     def visit_MatrixRefference(self, node):
         #visit id - czy jest macierza?
         #ogolnie co tu zrobic?
+        
+        if len(node.reffs.values) != 2:
+            raise TypeError("Matrix refference has to be 2 dimentional.")
+        #czy referencja jest w zakresie
+        # if node.reffs.values[0].value 
         return
     
     def visit_Condition(self, node):
         left_type = self.visit(node.left)
         right_type = self.visit(node.right)
         
+        #comparable
         if node.op == "EQ" or node.op == "NEQ":
-            if (left_type != right_type or left_type not in ["str", "matrix", "int", "float"]) or \
-               (left_type not in ["int", "float"] or not right_type not in ["int", "float"]):
-                raise TypeError(f"Cannot compare {left_type} and {right_type}.")
-            else:
+            if (left_type == right_type) or \
+               (left_type in ["int", "float"] and right_type in ["int", "float"]):
                 return
-        else:
-            if left_type not in ["int", "float"] or not right_type not in ["int", "float"]:
-                raise TypeError(f"Cannot check order between {left_type} and {right_type}.")
-            else:
-                return
+            raise TypeError(f"Cannot compare {left_type} and {right_type}.")
+        
+        #order
+        if left_type in ["int", "float"] and right_type in ["int", "float"]:
+            return
+        raise TypeError(f"Cannot check order between {left_type} and {right_type}.")
+
+
 
 
 

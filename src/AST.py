@@ -14,9 +14,9 @@ class Block(Node):
 
 
 class FunctionCall(Node):
-    def __init__(self, name, args):
+    def __init__(self, name, arg):
         self.name = name
-        self.args = args
+        self.arg = arg
 
 
 class UnaryExpr(Node):
