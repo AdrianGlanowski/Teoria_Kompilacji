@@ -173,10 +173,8 @@ class TypeChecker(NodeVisitor):
         return symbol.type
 
     def visit_Assignment(self, node):
-
+        value_type = self.visit(node.value)
         if node.op == "=":
-            value_type = self.visit(node.value)
-
             #co robi ten pierwszy if???
             if isinstance(node.variable, AST.MatrixRefference):
                 stored_type = self.visit(node.variable)
@@ -192,11 +190,15 @@ class TypeChecker(NodeVisitor):
             else:
                 self.symbol_table.put_variable(node.variable.name, value_type)
 
-        elif node.op == "+=": #TODO inne operatory
-        #czy mozna zrobic binary expr aktualnego typu vara z value?
-            pass
-        
+        elif node.op == "+=" or node.op == "-=": #TODO inne operatory
+            variable_type = self.visit(node.variable)
+            if variable_type not in ["int", "float"]:
+                self.add_error(f"Left side has to be of numeric type to use {node.op}, provided {variable_type}", node.line_no)
+            
+            if value_type not in ["int", "float"]:
+                self.add_error(f"Right side has to be of numeric type to use {node.op}, provided {value_type}", node.line_no)
 
+        
     def visit_IfStatement(self, node):
         self.visit(node.condition)
         self.visit(node.then_branch)

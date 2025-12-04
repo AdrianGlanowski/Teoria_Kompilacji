@@ -15,9 +15,14 @@ C = A.-B ;  # substract B from A
 C = A.*B ;  # multiply element-wise A with B
 C = A./B ;  # divide element-wise A by B
 
+A = 3;
+B = [[1]];
+C = 5;
+X = "string";
 C += B ;  # add B to C 
 C -= B ;  # substract B from C 
 C *= A ;  # multiply A with C
 C /= A ;  # divide A by C
+B += A;
 
 y = 3;
