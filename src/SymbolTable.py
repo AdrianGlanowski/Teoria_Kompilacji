@@ -15,23 +15,32 @@ class MatrixSymbol:
         self.stored_type = stored_type
 
 class Scope:
-    symbols = dict()
 
     def __init__(self, parent, level):
         self.parent = parent
         self.level = level
+        self.symbols = dict()
 
-    def put(self, name, type):
+    def put_variable(self, name, type):
         self.symbols[name] = VariableSymbol(name, type)
     
+    def put_matrix(self, name, type, shape, stored_type):
+        self.symbols[name] = MatrixSymbol(name, type, shape, stored_type)
+    
     def get(self, name):
-        return self.symbols[name]
+
+        if name in self.symbols:
+            return self.symbols[name]
+        
+        if self.parent == None:
+            raise TypeError(f"Undeclared variable {name}.")
+        
+        return self.parent.get(name)
+         
 
     def get_parent(self):
         return self.parent
     
-    def put(self, name, type, shape, stored_type):
-        self.symbols[name] = MatrixSymbol(name, type, shape, stored_type)
 
 
 class SymbolTable:
@@ -48,9 +57,9 @@ class SymbolTable:
     def get(self, name):
         return self.current_scope.get(name)
     
-    def put(self, name, type):
-        self.current_scope.put(name, type)
+    def put_variable(self, name, type):
+        self.current_scope.put_variable(name, type)
 
-    def put(self, name, type, shape, stored_type):
-        self.current_scope.put(name, type, shape, stored_type)
+    def put_matrix(self, name, type, shape, stored_type):
+        self.current_scope.put_matrix(name, type, shape, stored_type)
 

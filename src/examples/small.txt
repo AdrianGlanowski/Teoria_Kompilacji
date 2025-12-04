@@ -1,3 +1,9 @@
-for i = 1:N
-  for j = i:M
-    print i, j;
+y="urmom";
+print y;
+
+for i = 1:10{
+  for j = i:5  
+    z=15;
+  for j = i:5
+    print z;
+}

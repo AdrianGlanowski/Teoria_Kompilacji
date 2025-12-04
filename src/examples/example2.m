@@ -1,13 +1,15 @@
 # assignment operators
 # binary operators
 # transposition
+A = [[2]];
+B = [[5]];
 
 C = -A;     # assignment with unary expression
 C = B' ;    # assignment with matrix transpose
-C = A+B ;   # assignment with binary addition
-C = A-B ;   # assignment with binary substraction
-C = A*B ;   # assignment with binary multiplication
-C = A/B ;   # assignment with binary division
+C = 5+7 ;   # assignment with binary addition
+C = 8-9 ;   # assignment with binary substraction
+C = 2*B ;   # assignment with binary multiplication
+C = A/7 ;   # assignment with binary division
 C = A.+B ;  # add element-wise A to B
 C = A.-B ;  # substract B from A 
 C = A.*B ;  # multiply element-wise A with B
@@ -19,6 +21,3 @@ C *= A ;  # multiply A with C
 C /= A ;  # divide A by C
 
 y = 3;
-x = y';
-
-z = 5 + 6 / 7 - [[1, 2]] .* [[3, 4]];
