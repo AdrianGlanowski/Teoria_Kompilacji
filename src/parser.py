@@ -1,7 +1,7 @@
 # pyright: reportUndefinedVariable=false
 from sly import Parser
 from scanner import Scanner
-from ParserError import ParserError
+from errors import ParserError
 import AST
 
 # wyrażenia binarne,

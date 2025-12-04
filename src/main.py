@@ -2,8 +2,7 @@ import sys
 from TypeChecker import TypeChecker
 from scanner import Scanner
 from parser import Mparser
-from TreePrinter import TreePrinter
-from ParserError import ParserError
+from errors import ParserError
 
 
 if __name__ == '__main__':
