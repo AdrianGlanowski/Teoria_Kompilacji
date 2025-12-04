@@ -29,6 +29,14 @@ class TypeChecker(NodeVisitor):
 
     def __init__(self):
         self.symbol_table = st.SymbolTable()
+        self.errors = []
+
+    def add_error(self, message, line_no):
+        self.errors.append((message, line_no))
+
+    def print_errors(self):
+        for error, line in self.errors:
+            print(f"\033[91mType Error: {error} at line {line}\033[0m")
 
     def visit_Program(self, node):
         for line in node.lines:
@@ -42,9 +50,9 @@ class TypeChecker(NodeVisitor):
         
         arg_type = self.visit(node.arg)
         if arg_type != "int":
-            self.symbol_table.add_error(f"Argument of a {node.name} function has to be of type int.")
+            self.add_error(f"Argument of a {node.name} function has to be of type int", node.line_no)
         if node.arg.value <= 0:
-            self.symbol_table.add_error(f"Argument of a {node.name} function has to be positive.")
+            self.add_error(f"Argument of a {node.name} function has to be positive", node.line_no)
         node.shape = (node.arg.value, node.arg.value)
         node.stored_type = "int"
         
@@ -55,12 +63,12 @@ class TypeChecker(NodeVisitor):
         
         if node.op == "MINUS":
             if arg_type == "str":
-                self.symbol_table.add_error(f"Argument of negation can not be type str.")
+                self.add_error(f"Argument of negation can not be type str", node.line_no)
             return arg_type
         #transpose
         else:
             if arg_type != "matrix":
-                self.symbol_table.add_error(f"Argument of transposition has to be matrix.")
+                self.add_error(f"Argument of transposition has to be matrix", node.line_no)
             symbol = self.symbol_table.get(node.arg.name)
             node.shape = (symbol.shape[1], symbol.shape[0])
             return arg_type
@@ -72,7 +80,7 @@ class TypeChecker(NodeVisitor):
         if node.op == "*":
             if type_left == type_right == "matrix":
                 if node.left.shape[1] != node.right.shape[0]:
-                    self.symbol_table.add_error("Number of columns in the first matrix does not equal the number of rows in the second matrix.")
+                    self.add_error("Number of columns in the first matrix does not equal the number of rows in the second matrix", node.line_no)
                 return "matrix"
             elif (type_left in ["int", "float"] and type_right == "matrix") or (type_left == "matrix" and type_right in ["int", "float"]):
                 return "matrix"
@@ -81,7 +89,7 @@ class TypeChecker(NodeVisitor):
             elif type_left in ["int", "float"] and type_right in ["int", "float"]:
                 return "float"
             else:
-                self.symbol_table.add_error(f"Unsupported operand types for *: {type_left} and {type_right}")
+                self.add_error(f"Unsupported operand types for *: {type_left} and {type_right}", node.line_no)
         
         if node.op == "/":
             if type_left == "matrix" and type_right in ["int", "float"]:
@@ -95,15 +103,15 @@ class TypeChecker(NodeVisitor):
             elif type_left in ["int", "float"] and type_right in ["int", "float"]:
                 return 'float'
             else:
-                self.symbol_table.add_error(f"Unsupported operand types for {node.op}: '{type_left}' and '{type_right}'")
+                self.add_error(f"Unsupported operand types for {node.op}: '{type_left}' and '{type_right}'", node.line_no)
         
         if node.op in ['.+', '.-', '.*', './']:
             if (type_left == "matrix" and type_right == "matrix"):
                 if node.left.shape != node.right.shape:
-                    self.symbol_table.add_error("Cannot operate on matrices with different shapes.")
+                    self.add_error("Cannot operate on matrices with different shapes", node.line_no)
                 return 'matrix'
             else:
-                self.symbol_table.add_error(f"Arguments for matrix operation have to be matrices, provided: {type_left} and {type_right}.")
+                self.add_error(f"Arguments for matrix operation have to be matrices, provided: {type_left} and {type_right}", node.line_no)
 
     def visit_IntNum(self, node):
         return 'int'
@@ -123,7 +131,7 @@ class TypeChecker(NodeVisitor):
         row_length = len(node.rows[0].values)
         for i in range(1, len(node.rows)):
             if len(node.rows[i].values) != row_length:
-                self.symbol_table.add_error("Cannot initialize matrix with different row length.")
+                self.add_error("Cannot initialize matrix with different row length", node.line_no)
         node.shape = (len(node.rows), row_length)
 
         first_element_type = self.visit(node.rows[0].values[0])
@@ -131,7 +139,7 @@ class TypeChecker(NodeVisitor):
             for val in row.values:
                 element_type = self.visit(val)
                 if element_type != first_element_type:
-                    self.symbol_table.add_error("All elements of the matrix must be of the same type.")
+                    self.add_error("All elements of the matrix must be of the same type", node.line_no)
                 
         node.stored_type = first_element_type
         
@@ -157,7 +165,7 @@ class TypeChecker(NodeVisitor):
             if isinstance(node.variable, AST.MatrixRefference):
                 stored_type = self.visit(node.variable)
                 if stored_type != value_type:
-                    self.symbol_table.add_error("Value is of different type than matrix.")
+                    self.add_error("Value is of different type than matrix", node.line_no)
                 
                 return
 
@@ -189,7 +197,7 @@ class TypeChecker(NodeVisitor):
         start_type = self.visit(node.start)
         end_type = self.visit(node.end)
         if not (start_type == end_type == "int"):
-            self.symbol_table.add_error(f"Range has to be defined by two integers, provided: {start_type}:{end_type}")
+            self.add_error(f"Range has to be defined by two integers, provided: {start_type}:{end_type}", node.line_no)
 
     def visit_ForStatement(self, node):
         #czy visit variable?
@@ -207,15 +215,15 @@ class TypeChecker(NodeVisitor):
     def visit_BreakStatement(self, node):
         #test scope
         if self.symbol_table.current_scope.level == 0:
-            self.symbol_table.add_error("Nothing to break out of.")
+            self.add_error("Nothing to break out of", node.line_no)
     
     def visit_ContinueStatement(self, node):
         if self.symbol_table.current_scope.level == 0:
-            self.symbol_table.add_error("Nothing to continue.")
+            self.add_error("Nothing to continue", node.line_no)
 
     def visit_ReturnStatement(self, node):
         if self.symbol_table.current_scope.level == 0:
-            self.symbol_table.add_error("Nowhere to return.")
+            self.add_error("Nowhere to return", node.line_no)
         
         if node.value != None:
             self.visit(node.value)
@@ -228,19 +236,19 @@ class TypeChecker(NodeVisitor):
         symbol = self.symbol_table.get(node.variable.name)
 
         if symbol.type != "matrix":
-            self.symbol_table.add_error("Cannot refference non-matrix.")
+            self.add_error("Cannot refference non-matrix", node.line_no)
         
         if len(node.reffs.values) != 2:
-            self.symbol_table.add_error("Matrix refference has to be 2 dimentional.")
+            self.add_error("Matrix refference has to be 2 dimentional", node.line_no)
 
         type1 = self.visit(node.reffs.values[0])
         type2 = self.visit(node.reffs.values[1])
 
         if type1 != "int" or type2 != "int":
-            self.symbol_table.add_error("Matrix refference indices have to be of type int.")
+            self.add_error("Matrix refference indices have to be of type int", node.line_no)
         
         if node.reffs.values[0].value >= symbol.shape[0] or node.reffs.values[1].value >= symbol.shape[1]:
-            self.symbol_table.add_error("Matrix refference out of bounds.")
+            self.add_error("Matrix refference out of bounds", node.line_no)
         
         return symbol.stored_type
     
@@ -253,12 +261,12 @@ class TypeChecker(NodeVisitor):
             if (left_type == right_type) or \
                (left_type in ["int", "float"] and right_type in ["int", "float"]):
                 return
-            self.symbol_table.add_error(f"Cannot compare {left_type} and {right_type}.")
+            self.add_error(f"Cannot compare {left_type} and {right_type}", node.line_no)
         
         #order
         if left_type in ["int", "float"] and right_type in ["int", "float"]:
             return
-        self.symbol_table.add_error(f"Cannot check order between {left_type} and {right_type}.")
+        self.add_error(f"Cannot check order between {left_type} and {right_type}", node.line_no)
 
 
 
