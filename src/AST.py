@@ -1,5 +1,6 @@
 class Node:
-    pass
+    def __init__(self):
+        self.lineno = None
 
 
 class Program(Node):

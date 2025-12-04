@@ -48,6 +48,8 @@ class SymbolTable:
         self.global_scope = Scope(None, 0)
         self.current_scope = self.global_scope
 
+        self.errors = []
+
     def push_scope(self):
         self.current_scope = Scope(self.current_scope, self.current_scope.level+1)
 
@@ -55,11 +57,17 @@ class SymbolTable:
         self.current_scope = self.current_scope.get_parent()
 
     def get(self, name):
-        return self.current_scope.get(name)
+        try:
+            return self.current_scope.get(name)
+        except TypeError as e:
+            self.add_error(str(e))
     
     def put_variable(self, name, type):
         self.current_scope.put_variable(name, type)
 
     def put_matrix(self, name, type, shape, stored_type):
         self.current_scope.put_matrix(name, type, shape, stored_type)
+
+    def add_error(self, message):
+        self.errors.append(message)
 
