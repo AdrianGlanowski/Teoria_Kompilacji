@@ -70,6 +70,7 @@ class TypeChecker(NodeVisitor):
 
     def visit_UnaryExpr(self, node):
         arg_type = self.visit(node.arg)
+
         
         if node.op == "MINUS":
             if arg_type == "str":
@@ -84,110 +85,48 @@ class TypeChecker(NodeVisitor):
             return arg_type
     
     def visit_BinaryExpr(self, node):
-        type_left = self.visit(node.left)
+        type_left = self.visit(node.left)  
         type_right = self.visit(node.right)
-        op = node.op
 
-        # --- Zmienne pomocnicze dla czytelności ---
-        is_numeric_left = type_left in ["int", "float"]
-        is_numeric_right = type_right in ["int", "float"]
-        is_matrix_left = type_left == "matrix"
-        is_matrix_right = type_right == "matrix"
-
-        # Ustalanie typu wynikowego dla operacji na samych liczbach
-        # int op int -> int (chyba że dzielenie, ale tu upraszczamy)
-        # float op int -> float
-        numeric_result_type = "float"
-        if type_left == "int" and type_right == "int":
-            numeric_result_type = "int"
-
-        # ==========================================
-        # 1. OPERATORY ELEMENT-WISE (z kropką)
-        #    .+, .-, .*, ./
-        # ==========================================
-        if op in ['.+', '.-', '.*', './']:
-            # A. Macierz .op Macierz (musi być ten sam rozmiar)
-            if is_matrix_left and is_matrix_right:
-                if node.left.shape != node.right.shape:
-                    self.add_error(f"Element-wise operation {op} requires same shapes", node.line_no)
-                return "matrix"
-            
-            # B. Skalar .op Macierz lub Macierz .op Skalar (Broadcasting)
-            elif (is_numeric_left and is_matrix_right) or (is_matrix_left and is_numeric_right):
-                return "matrix"
-                
-            # C. Skalar .op Skalar (traktujemy jak zwykłe działanie)
-            elif is_numeric_left and is_numeric_right:
-                return numeric_result_type
-                
-            else:
-                self.add_error(f"Invalid types for {op}: {type_left}, {type_right}", node.line_no)
-                return "matrix" # Zwracamy cokolwiek, by nie wysypać reszty
-
-        # ==========================================
-        # 2. STANDARDOWE MNOŻENIE (*)
-        # ==========================================
-        elif op == "*":
-            # A. Macierz * Macierz (Algebra: colsA == rowsB)
-            if is_matrix_left and is_matrix_right:
-                # Uwaga: shape[0] to wiersze, shape[1] to kolumny
+        if node.op == "*":
+            if type_left == type_right == "matrix":
                 if node.left.shape[1] != node.right.shape[0]:
-                    self.add_error(f"Matrix multiplication error: {node.left.shape} vs {node.right.shape}", node.line_no)
+                    self.add_error("Number of columns in the first matrix does not equal the number of rows in the second matrix", node.line_no)
+                    return "undefined"
                 return "matrix"
+            elif (type_left in ["int", "float"] and type_right == "matrix") or (type_left == "matrix" and type_right in ["int", "float"]):
+                return "matrix"
+            elif type_left == type_right == "int":
+                return "int"
+            elif type_left in ["int", "float"] and type_right in ["int", "float"]:
+                return "float"
+            else:
+                self.add_error(f"Unsupported operand types for *: {type_left} and {type_right}", node.line_no)
+                return "undefined"
+
+        if node.op == "/":
+            if type_left == "matrix" and type_right in ["int", "float"]:
+                return "matrix"
+            elif type_left in ["int", "float"] and type_right in ["int", "float"]:
+                return "float"
             
-            # B. Skalar * Macierz (Skalowanie)
-            elif (is_numeric_left and is_matrix_right) or (is_matrix_left and is_numeric_right):
-                return "matrix"
-                
-            # C. Skalar * Skalar
-            elif is_numeric_left and is_numeric_right:
-                return numeric_result_type
-                
+        if node.op in ['+', '-']:
+            if type_left == type_right == 'int': 
+                return 'int'
+            elif type_left in ["int", "float"] and type_right in ["int", "float"]:
+                return 'float'
             else:
-                self.add_error(f"Invalid types for *: {type_left}, {type_right}", node.line_no)
+                self.add_error(f"Unsupported operand types for {node.op}: '{type_left}' and '{type_right}'", node.line_no)
+                return "undefined"
 
-        # ==========================================
-        # 3. STANDARDOWE DZIELENIE (/)
-        # ==========================================
-        elif op == "/":
-            # A. Macierz / Skalar (Dozwolone skalowanie)
-            if is_matrix_left and is_numeric_right:
-                return "matrix"
-                
-            # B. Skalar / Skalar
-            elif is_numeric_left and is_numeric_right:
-                return "float" # Dzielenie zazwyczaj daje float
-                
-            # C. BŁĘDY: Macierz / Macierz ORAZ Skalar / Macierz
-            elif is_matrix_right: 
-                self.add_error("Division by a matrix is not supported. Use './' for element-wise division.", node.line_no)
-                return "matrix" # Dummy return
-                
-            else:
-                self.add_error(f"Invalid types for /: {type_left}, {type_right}", node.line_no)
-
-        # ==========================================
-        # 4. DODAWANIE I ODEJMOWANIE (+, -)
-        # ==========================================
-        elif op in ['+', '-']:
-            # A. Macierz +/- Macierz (ten sam rozmiar)
-            if is_matrix_left and is_matrix_right:
+        if node.op in ['.+', '.-', '.*', './']:
+            if (type_left == "matrix" and type_right == "matrix"):
                 if node.left.shape != node.right.shape:
-                    self.add_error(f"Matrix addition/subtraction requires same shapes", node.line_no)
-                return "matrix"
-                
-            # B. Skalar +/- Macierz (Broadcasting - opcjonalne, ale wygodne)
-            elif (is_numeric_left and is_matrix_right) or (is_matrix_left and is_numeric_right):
-                return "matrix"
-                
-            # C. Skalar +/- Skalar
-            elif is_numeric_left and is_numeric_right:
-                return numeric_result_type
-                
+                    self.add_error("Cannot operate on matrices with different shapes", node.line_no)
+                return 'matrix'
             else:
-                self.add_error(f"Invalid types for {op}: {type_left}, {type_right}", node.line_no)
-
-        return "float" # Fallback
+                self.add_error(f"Arguments for matrix operation have to be matrices, provided: {type_left} and {type_right}", node.line_no)
+                return "matrix"
 
     def visit_IntNum(self, node):
         return 'int'
@@ -208,6 +147,7 @@ class TypeChecker(NodeVisitor):
         for i in range(1, len(node.rows)):
             if len(node.rows[i].values) != row_length:
                 self.add_error("Cannot initialize matrix with different row length", node.line_no)
+                return "matrix"
         node.shape = (len(node.rows), row_length)
 
         first_element_type = self.visit(node.rows[0].values[0])
@@ -252,7 +192,7 @@ class TypeChecker(NodeVisitor):
             else:
                 self.symbol_table.put_variable(node.variable.name, value_type)
 
-        else: #TODO inne operatory
+        elif node.op == "+=": #TODO inne operatory
         #czy mozna zrobic binary expr aktualnego typu vara z value?
             pass
         
@@ -279,14 +219,14 @@ class TypeChecker(NodeVisitor):
         #czy visit variable?
         # self.visit(node.variable)
         self.symbol_table.push_scope()
-        print("entering into: ", self.symbol_table.current_scope.level)
+        print("\33[33mentering into: ", self.symbol_table.current_scope.level, "\033[0m")
         self.symbol_table.put_variable(node.variable.name, "int")
         self.visit(node.range)
         self.visit(node.body)
         
-        print("deleting variables: ", self.symbol_table.current_scope.symbols)
+        print("\33[35mdeleting variables: ", self.symbol_table.current_scope.symbols, "\033[0m")
         self.symbol_table.pop_scope()
-        print("exiting into: ", self.symbol_table.current_scope.level)
+        print("\33[33mexiting into: ", self.symbol_table.current_scope.level, "\033[0m")
 
     def visit_BreakStatement(self, node):
         #test scope
@@ -317,15 +257,16 @@ class TypeChecker(NodeVisitor):
         if len(node.reffs.values) != 2:
             self.add_error("Matrix refference has to be 2 dimentional", node.line_no)
 
-        type1 = self.visit(node.reffs.values[0])
-        type2 = self.visit(node.reffs.values[1])
+        if len(node.reffs.values) >= 2:
+            type1 = self.visit(node.reffs.values[0])
+            type2 = self.visit(node.reffs.values[1])
 
-        if type1 != "int" or type2 != "int":
-            self.add_error("Matrix refference indices have to be of type int", node.line_no)
-        
-        if node.reffs.values[0].value >= symbol.shape[0] or node.reffs.values[1].value >= symbol.shape[1]:
-            self.add_error("Matrix refference out of bounds", node.line_no)
-        
+            if type1 != "int" or type2 != "int":
+                self.add_error("Matrix refference indices have to be of type int", node.line_no)
+            
+            if node.reffs.values[0].value >= symbol.shape[0] or node.reffs.values[1].value >= symbol.shape[1]:
+                self.add_error("Matrix refference out of bounds", node.line_no)
+            
         return symbol.stored_type
     
     def visit_Condition(self, node):
