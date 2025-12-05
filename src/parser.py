@@ -193,9 +193,9 @@ class Mparser(Parser):
     def expr(self, p):
         return p.matrix_reference
 
-    @_('var "\'" ')
-    def expr(self, p):
-        return AST.UnaryExpr(p.lineno, p[1], p.var)
+    # @_('var "\'" ')
+    # def expr(self, p):
+    #     return AST.UnaryExpr(p.lineno, p[1], p.var)
 
     @_("INTNUM")
     def expr(self, p):
@@ -204,6 +204,10 @@ class Mparser(Parser):
     @_("FLOATNUM")
     def expr(self, p):
         return AST.FloatNum(p.lineno, p[0])
+    
+    @_('expr "\'"')
+    def expr(self, p):
+        return AST.UnaryExpr(p.lineno, p[1], p.expr)
 
     @_("var")
     def expr(self, p):
@@ -217,10 +221,6 @@ class Mparser(Parser):
 
     # ---------------------------
     # matrix
-    @_('matrix "\'"')
-    def matrix(self, p):
-        return AST.UnaryExpr(p.lineno, p[1], p.matrix)
-
     @_('"[" vectors "]"')
     def matrix(self, p):
         return AST.Matrix(p.lineno, p.vectors)

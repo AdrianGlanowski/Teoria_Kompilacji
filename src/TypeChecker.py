@@ -42,7 +42,7 @@ class TypeChecker(NodeVisitor):
             self.add_error(f"Undeclared variable {name}", line_no)
 
             # return dummy symbol to avoid crashes???
-            return st.VariableSymbol(name, "undefined")
+            return st.MatrixSymbol(name, "undefined", None, None)
 
     def print_errors(self):
         for error, line in self.errors:
@@ -78,10 +78,14 @@ class TypeChecker(NodeVisitor):
             return arg_type
         #transpose
         else:
+            print(dir(node), node.arg, node.op, arg_type)
             if arg_type != "matrix":
                 self.add_error(f"Argument of transposition has to be matrix", node.line_no)
-            symbol = self.symbol_table_safe_get(node.arg.name, node.line_no)
-            node.shape = (symbol.shape[1], symbol.shape[0])
+                return "undefined"
+    
+            node.shape = (node.arg.shape[1], node.arg.shape[0])
+            node.stored_type = node.arg.stored_type
+            
             return arg_type
     
     def visit_BinaryExpr(self, node):
@@ -93,6 +97,8 @@ class TypeChecker(NodeVisitor):
                 if node.left.shape[1] != node.right.shape[0]:
                     self.add_error("Number of columns in the first matrix does not equal the number of rows in the second matrix", node.line_no)
                     return "undefined"
+                node.shape = (node.left.shape[0], node.right.shape[1])
+                node.stored_type = node.left.stored_type
                 return "matrix"
             elif (type_left in ["int", "float"] and type_right == "matrix") or (type_left == "matrix" and type_right in ["int", "float"]):
                 return "matrix"
@@ -123,10 +129,14 @@ class TypeChecker(NodeVisitor):
             if (type_left == "matrix" and type_right == "matrix"):
                 if node.left.shape != node.right.shape:
                     self.add_error("Cannot operate on matrices with different shapes", node.line_no)
+                
+                node.shape = node.left.shape
+                node.stored_type = node.left.stored_type
+
                 return 'matrix'
             else:
                 self.add_error(f"Arguments for matrix operation have to be matrices, provided: {type_left} and {type_right}", node.line_no)
-                return "matrix"
+                return "undefined"
 
     def visit_IntNum(self, node):
         return 'int'
@@ -168,6 +178,7 @@ class TypeChecker(NodeVisitor):
         if isinstance(symbol, st.MatrixSymbol):
             node.type = symbol.type
             node.shape = symbol.shape
+            node.stored_type = symbol.stored_type
         # MIMO ZE TE POLA NIE ISTNIEJA W KLASIE AST.Id
         
         return symbol.type
