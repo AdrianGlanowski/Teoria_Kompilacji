@@ -7,15 +7,7 @@ from errors import UndeclaredVariableError
 class VariableSymbol:
     def __init__(self, name, type):
         self.name = name
-        self.type = type
-
-
-class MatrixSymbol:
-    def __init__(self, name, type, shape, stored_type):
-        self.name = name
-        self.type = type
-        self.shape = shape
-        self.stored_type = stored_type
+        self.type = type # MatrixType, IntType, FloatType, String
 
 class Scope:
 
@@ -24,11 +16,8 @@ class Scope:
         self.level = level
         self.symbols = dict()
 
-    def put_variable(self, name, type):
+    def put(self, name, type):
         self.symbols[name] = VariableSymbol(name, type)
-    
-    def put_matrix(self, name, type, shape, stored_type):
-        self.symbols[name] = MatrixSymbol(name, type, shape, stored_type)
     
     def get(self, name):
 
@@ -60,8 +49,5 @@ class SymbolTable:
     def get(self, name):
         return self.current_scope.get(name)
     
-    def put_variable(self, name, type):
-        self.current_scope.put_variable(name, type)
-
-    def put_matrix(self, name, type, shape, stored_type):
-        self.current_scope.put_matrix(name, type, shape, stored_type)
+    def put(self, name, type):
+        self.current_scope.put(name, type)
