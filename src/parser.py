@@ -1,7 +1,7 @@
 # pyright: reportUndefinedVariable=false
 from sly import Parser
 from scanner import Scanner
-from ParserError import ParserError
+from errors import ParserError
 import AST
 
 # wyrażenia binarne,
@@ -28,12 +28,9 @@ class Mparser(Parser):
     precedence = (
         ("nonassoc", "IFX"),
         ("nonassoc", "ELSE"),
-        ("right", "MUL_ASSIGN", "DIV_ASSIGN", "SUB_ASSIGN", "ADD_ASSIGN"),
         ("nonassoc", "<", ">", "LTE", "GTE", "NEQ", "EQ"),
-        ("left", "+", "-"),
-        ("left", "*", "/"),
-        ("left", "DOT_ADD", "DOT_SUB"),
-        ("left", "DOT_MUL", "DOT_DIV"),
+        ("left", "+", "-", "DOT_ADD", "DOT_SUB"),
+        ("left", "*", "/", "DOT_MUL", "DOT_DIV"),
         ("right", "UMINUS"),
         ("left", "'"),
     )
@@ -42,7 +39,7 @@ class Mparser(Parser):
     # program to ciąg linijek (lines)
     @_("lines")
     def program(self, p):
-        return AST.Program(p.lines)
+        return AST.Program(p.lineno, p.lines)
 
     # ---------------------------
     # lines
@@ -72,23 +69,23 @@ class Mparser(Parser):
     # BREAK I CONTINUE DZIALA WSZEDZIE, A POWINIEN TYLKO W PETLI
     @_("BREAK")
     def statement(self, p):
-        return AST.BreakStatement()
+        return AST.BreakStatement(p.lineno)
 
     @_("CONTINUE")
     def statement(self, p):
-        return AST.ContinueStatement()
+        return AST.ContinueStatement(p.lineno)
 
     @_("RETURN")
     def statement(self, p):
-        return AST.ReturnStatement()
+        return AST.ReturnStatement(p.lineno)
 
     @_("RETURN expr")
     def statement(self, p):
-        return AST.ReturnStatement(p.expr)
+        return AST.ReturnStatement(p.lineno, p.expr)
 
     @_("PRINT print_args")
     def statement(self, p):
-        return AST.PrintStatement(p[1])
+        return AST.PrintStatement(p.lineno, p[1])
 
     @_("print_args ',' print_arg")
     def print_args(self, p):
@@ -104,7 +101,7 @@ class Mparser(Parser):
 
     @_("STRING")
     def print_arg(self, p):
-        return [str(p[0])]
+        return [AST.String(p.lineno, p[0])]
 
     # ---------------------------
     # assignments
@@ -116,44 +113,44 @@ class Mparser(Parser):
         "var DIV_ASSIGN expr",
     )
     def assignment(self, p):
-        return AST.Assignment(p[1], p.var, p.expr)
+        return AST.Assignment(p.lineno, p[1], p.var, p.expr)
 
     @_('var "=" STRING')
     def assignment(self, p):
-        return AST.Assignment(p[1], p.var, p[2])
+        return AST.Assignment(p.lineno, p[1], p.var, AST.String(p.lineno, p[2]))
 
     @_('matrix_reference "=" expr')
     def assignment(self, p):
-        return AST.Assignment(p[1], p.matrix_reference, p.expr)
+        return AST.Assignment(p.lineno, p[1], p.matrix_reference, p.expr)
 
     # ---------------------------
     # warunki i petle
     # pomysl: osobny if dla petli
     @_('IF "(" condition ")" block %prec IFX')
     def if_statement(self, p):
-        return AST.IfStatement(p.condition, p.block)
+        return AST.IfStatement(p.lineno, p.condition, p.block)
 
     @_('IF "(" condition ")" block ELSE block')
     def if_statement(self, p):
-        return AST.IfStatement(p.condition, p.block0, p.block1)
+        return AST.IfStatement(p.lineno, p.condition, p.block0, p.block1)
 
     @_('WHILE "(" condition ")" block')
     def while_statement(self, p):
-        return AST.WhileStatement(p.condition, p.block)
+        return AST.WhileStatement(p.lineno, p.condition, p.block)
 
     @_('FOR var "=" expr ":" expr block')
     def for_statement(self, p):
-        return AST.ForStatement(p.var, p.expr0, p.expr1, p.block)
+        return AST.ForStatement(p.lineno, p.var, p.expr0, p.expr1, p.block)
 
     # ---------------------------
     # blok
     @_("line")
     def block(self, p):
-        return AST.Block([p.line])
+        return AST.Block(p.lineno, [p.line])
 
     @_('"{" lines "}"')
     def block(self, p):
-        return AST.Block(p.lines)
+        return AST.Block(p.lineno, p.lines)
 
     # ---------------------------
     # condition
@@ -163,13 +160,13 @@ class Mparser(Parser):
 
     @_("expr comp_op expr")
     def condition(self, p):
-        return AST.Condition(p.comp_op, p.expr0, p.expr1)
+        return AST.Condition(p.lineno, p.comp_op, p.expr0, p.expr1)
 
     # ---------------------------
     # expressions
     @_('"-" expr %prec UMINUS')
     def expr(self, p):
-        return AST.UnaryExpr(p[0], p.expr)
+        return AST.UnaryExpr(p.lineno, p[0], p.expr)
 
     @_(
         'expr "+" expr',
@@ -182,7 +179,7 @@ class Mparser(Parser):
         "expr DOT_DIV expr",
     )
     def expr(self, p):
-        return AST.BinaryExpr(p[1], p[0], p[2])
+        return AST.BinaryExpr(p.lineno, p[1], p[0], p[2])
 
     @_('"(" expr ")"')
     def expr(self, p):
@@ -196,17 +193,21 @@ class Mparser(Parser):
     def expr(self, p):
         return p.matrix_reference
 
-    @_('var "\'" ')
-    def expr(self, p):
-        return AST.UnaryExpr(p[1], p.var)
+    # @_('var "\'" ')
+    # def expr(self, p):
+    #     return AST.UnaryExpr(p.lineno, p[1], p.var)
 
     @_("INTNUM")
     def expr(self, p):
-        return AST.IntNum(p[0])
+        return AST.IntNum(p.lineno, p[0])
 
     @_("FLOATNUM")
     def expr(self, p):
-        return AST.FloatNum(p[0])
+        return AST.FloatNum(p.lineno, p[0])
+    
+    @_('expr "\'"')
+    def expr(self, p):
+        return AST.UnaryExpr(p.lineno, p[1], p.expr)
 
     @_("var")
     def expr(self, p):
@@ -216,22 +217,18 @@ class Mparser(Parser):
     # variable
     @_("ID")
     def var(self, p):
-        return AST.Id(p[0])
+        return AST.Id(p.lineno, p[0])
 
     # ---------------------------
     # matrix
-    @_('matrix "\'"')
-    def matrix(self, p):
-        return AST.UnaryExpr(p[1], p.matrix)
-
     @_('"[" vectors "]"')
     def matrix(self, p):
-        return AST.Matrix(p.vectors)
+        return AST.Matrix(p.lineno, p.vectors)
 
     # matrix creation with functions
     @_('ZEROS "(" INTNUM ")"', 'ONES "(" INTNUM ")"', 'EYE "(" INTNUM ")"')
     def matrix(self, p):
-        return AST.FunctionCall(p[0], p[2])
+        return AST.FunctionCall(p.lineno, p[0], AST.IntNum(p.lineno, p[2]))
 
     @_('vectors "," vector')
     def vectors(self, p):
@@ -243,7 +240,7 @@ class Mparser(Parser):
 
     @_('"[" row "]"')
     def vector(self, p):
-        return AST.Vector(p.row)
+        return AST.Vector(p.lineno, p.row)
 
     # rows
     @_('row "," expr')
@@ -256,7 +253,7 @@ class Mparser(Parser):
 
     @_("var vector")
     def matrix_reference(self, p):
-        return AST.MatrixRefference(p.var, p.vector)
+        return AST.MatrixRefference(p.lineno, p.var, p.vector)
 
     def error(self, p):
         if p:
