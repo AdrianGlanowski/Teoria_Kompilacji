@@ -88,7 +88,7 @@ class TypeChecker(NodeVisitor):
             return arg_type
         #transpose
         else:
-            print(dir(node), node.arg, node.op, arg_type)
+            
             if not isinstance(arg_type, MatrixType):
                 self.add_error(f"Argument of transposition has to be matrix", node.line_no)
                 return UndefinedType()
