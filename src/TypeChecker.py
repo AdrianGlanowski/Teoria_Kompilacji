@@ -204,7 +204,7 @@ class TypeChecker(NodeVisitor):
 
             self.symbol_table.put(node.variable.name, value_type)
 
-        elif node.op == "+=" or node.op == "-=":
+        elif node.op == "+=" or node.op == "-=" or node.op == "*=" or node.op == "*=":
             variable_type = self.visit(node.variable)
             
             if not isinstance(variable_type, NumericType):
