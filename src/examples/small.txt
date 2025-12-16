@@ -2,6 +2,9 @@ y="urmom";
 print y;
 
 a =[[1]];
+b =[[5]];
+
+A = (a.+b)';
 
 x=x.+a;
 

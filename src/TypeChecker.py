@@ -2,13 +2,13 @@
 import AST
 import SymbolTable as st
 from errors import UndeclaredVariableError
-from custom_types import MatrixType, IntType, FloatType, String, UndefinedType, NumericType
+from custom_types import MatrixType, IntType, FloatType, StringType, UndefinedType, NumericType
 
 class NodeVisitor(object):
 
     def visit(self, node):
         method = 'visit_' + node.__class__.__name__
-        print(f"visiting: {method}")
+        print(f"{node.line_no}: visiting {method}")
         visitor = getattr(self, method, None)
         return visitor(node)
 
@@ -26,7 +26,12 @@ class NodeVisitor(object):
     #                 self.visit(child)
 
 
-def isinstance2(type_left, type_right, type1, type2=None):
+def check_both_types(type_left, type_right, type1, type2=None):
+    """
+        Function for type checking of variables at the same time. 
+        If specified, both variables can be checked against different types, 
+        otherwise they are check against the same types.
+    """
     if type2 is None:
         type2 = type1
         
@@ -66,33 +71,30 @@ class TypeChecker(NodeVisitor):
     def visit_FunctionCall(self, node):
         
         arg_type = self.visit(node.arg)
-        if arg_type != "int":
-            self.add_error(f"Argument of a {node.name} function has to be of type int", node.line_no)
+        if not isinstance(arg_type, IntType):
+            self.add_error(f"Argument of a {node.name} function has to be of type int, provided {arg_type}", node.line_no)
         if node.arg.value <= 0:
             self.add_error(f"Argument of a {node.name} function has to be positive", node.line_no)
-        node.shape = (node.arg.value, node.arg.value)
-        node.stored_type = "int"
         
-        return "matrix"
+        return MatrixType((node.arg.value, node.arg.value), IntType())
 
     def visit_UnaryExpr(self, node):
         arg_type = self.visit(node.arg)
 
         
         if node.op == "MINUS":
-            if arg_type == "str":
+            if isinstance(arg_type, StringType):
                 self.add_error(f"Argument of negation can not be type str", node.line_no)
             return arg_type
         #transpose
         else:
             print(dir(node), node.arg, node.op, arg_type)
-            if arg_type != "matrix":
+            if not isinstance(arg_type, MatrixType):
                 self.add_error(f"Argument of transposition has to be matrix", node.line_no)
-                return "undefined"
-    
-            node.shape = (node.arg.shape[1], node.arg.shape[0])
-            node.stored_type = node.arg.stored_type
+                return UndefinedType()
 
+            arg_type.shape = (arg_type.shape[1], arg_type.shape[0]) 
+       
             return arg_type
     
 
@@ -102,25 +104,23 @@ class TypeChecker(NodeVisitor):
         type_right = self.visit(node.right)
 
         if node.op == "*":
-            if isinstance2(type_left, type_right, MatrixType):
+            if check_both_types(type_left, type_right, MatrixType):
                 if type_left.shape[1] != type_right.shape[0]:
                     self.add_error("Number of columns in the first matrix does not equal the number of rows in the second matrix", node.line_no)
                     return UndefinedType()
  
                 return MatrixType((type_left.shape[0], type_right.shape[1]), type_left.stored_type)
             
-            if isinstance2(type_left, type_right, NumericType, MatrixType):
+            if check_both_types(type_left, type_right, NumericType, MatrixType):
                 return MatrixType(type_right.shape, type_right.stored_type)
             
-            if isinstance2(type_left, type_right, MatrixType, NumericType):
+            if check_both_types(type_left, type_right, MatrixType, NumericType):
                 return MatrixType(type_left.shape, type_left.stored_type)
 
-            # elif type_left == type_right == "int":
-            if isinstance2(type_left, type_right, IntType):
+            if check_both_types(type_left, type_right, IntType):
                 return IntType()
             
-            # elif type_left in ["int", "float"] and type_right in ["int", "float"]:
-            if isinstance2(type_left, type_right, NumericType):
+            if check_both_types(type_left, type_right, NumericType):
                 return FloatType()
             
             self.add_error(f"Unsupported operand types for *: {type_left} and {type_right}", node.line_no)
@@ -128,29 +128,24 @@ class TypeChecker(NodeVisitor):
 
         if node.op == "/":
 
-            # if type_left == "matrix" and type_right in ["int", "float"]:
-            if isinstance2(type_left, type_right, MatrixType, NumericType):
+            if check_both_types(type_left, type_right, MatrixType, NumericType):
                 return MatrixType(type_left.shape, FloatType())
             
-            # elif type_left in ["int", "float"] and type_right in ["int", "float"]:
-            if isinstance2(type_left, type_right, NumericType):
+            if check_both_types(type_left, type_right, NumericType):
                 return FloatType()
             
         if node.op in ['+', '-']:
-            # if type_left == type_right == 'int': 
-            if isinstance2(type_left, type_right, IntType):
+            if check_both_types(type_left, type_right, IntType):
                 return IntType()
             
-            if isinstance2(type_left, type_right, NumericType):
+            if check_both_types(type_left, type_right, NumericType):
                 return FloatType()
             
             self.add_error(f"Unsupported operand types for {node.op}: '{type_left}' and '{type_right}'", node.line_no)
             return UndefinedType()
 
         if node.op in ['.+', '.-', '.*', './']:
-            # if (type_left == "matrix" and type_right == "matrix"):
-            if isinstance2(type_left, type_right, MatrixType):
-                # if node.left.shape != node.right.shape:
+            if check_both_types(type_left, type_right, MatrixType):
                 if type_left.shape != type_right.shape:
                     self.add_error("Cannot operate on matrices with different shapes", node.line_no)
                     return UndefinedType()
@@ -168,7 +163,7 @@ class TypeChecker(NodeVisitor):
         return FloatType()
 
     def visit_String(self, node):
-        return String()
+        return StringType()
     
     def visit_Vector(self, node):
         return
@@ -191,17 +186,10 @@ class TypeChecker(NodeVisitor):
         return MatrixType((len(node.rows), row_length), first_element_type)
 
     def visit_Id(self, node):
-        symbol = self.symbol_table_safe_get(node.name, node.line_no)
-
-        # TO DODAJE DYNAMICZNIE TYPE I SHAPE DO AST.Id, jesli id odnosi sie do matrix
-        # if isinstance(symbol, st.MatrixSymbol):
-            # return MatrixType(symbol.shape, symbol.stored_type)
-            # node.type = symbol.type
-            # node.shape = symbol.shape
-            # node.stored_type = symbol.stored_type
-        # MIMO ZE TE POLA NIE ISTNIEJA W KLASIE AST.Id
-        
-        return symbol.type
+        """
+            Returns a type currently held by variable with given name.
+        """
+        return self.symbol_table_safe_get(node.name, node.line_no).type
 
     def visit_Assignment(self, node):
         value_type = self.visit(node.value)
@@ -241,13 +229,13 @@ class TypeChecker(NodeVisitor):
     def visit_Range(self, node):
         start_type = self.visit(node.start)
         end_type = self.visit(node.end)
-        if not isinstance2(start_type, end_type, IntType):
+        if not check_both_types(start_type, end_type, IntType):
             self.add_error(f"Range has to be defined by two integers, provided: {start_type}:{end_type}", node.line_no)
 
     def visit_ForStatement(self, node):
         self.symbol_table.push_scope()
         print("\33[33mentering into: ", self.symbol_table.current_scope.level, "\033[0m")
-        self.symbol_table.put_variable(node.variable.name, "int")
+        self.symbol_table.put(node.variable.name, IntType())
         self.visit(node.range)
         self.visit(node.body)
         
@@ -256,7 +244,6 @@ class TypeChecker(NodeVisitor):
         print("\33[33mexiting into: ", self.symbol_table.current_scope.level, "\033[0m")
 
     def visit_BreakStatement(self, node):
-        #test scope
         if self.symbol_table.current_scope.level == 0:
             self.add_error("Nothing to break out of", node.line_no)
     
@@ -288,7 +275,7 @@ class TypeChecker(NodeVisitor):
             type1 = self.visit(node.reffs.values[0])
             type2 = self.visit(node.reffs.values[1])
 
-            if not isinstance2(type1, type2, IntType):
+            if not check_both_types(type1, type2, IntType):
                 self.add_error("Matrix refference indices have to be of type int", node.line_no)
             
             if node.reffs.values[0].value >= symbol.type.shape[0] or node.reffs.values[1].value >= symbol.type.shape[1]:
@@ -303,15 +290,14 @@ class TypeChecker(NodeVisitor):
         #comparable
         if node.op == "EQ" or node.op == "NEQ":
             if (type(left_type) == type(right_type)) or \
-                isinstance2(left_type, right_type, NumericType):
+                check_both_types(left_type, right_type, NumericType):
 
                 return
             
             self.add_error(f"Cannot compare {left_type} and {right_type}", node.line_no)
         
         #order
-        # if left_type in ["int", "float"] and right_type in ["int", "float"]:
-        if isinstance2(left_type, right_type, NumericType):
+        if check_both_types(left_type, right_type, NumericType):
             return
         
         self.add_error(f"Cannot check order between {left_type} and {right_type}", node.line_no)
