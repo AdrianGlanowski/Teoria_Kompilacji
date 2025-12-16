@@ -16,5 +16,11 @@ Parser budujący gramatykę języka.
 ## [AST](src/AST.py)
 Moduł do tworzenia drzewa syntaktycznego (Abstract Syntax Tree).
 
+---
+## [TypeChecker](src/TypeChecker.py)
+Moduł sprawdzający poprawność zdefiniowania typów oraz zakresów w programie, wykorzystuje on [tablicę symboli](src/SymbolTable.py).
+
+
+
 
 
