@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import AST
-import SymbolTable as st
+from SymbolTable import SymbolTable, VariableSymbol
 from errors import UndeclaredVariableError
 from custom_types import MatrixType, IntType, FloatType, StringType, UndefinedType, NumericType
 
@@ -43,7 +43,7 @@ def check_both_types(type_left, type_right, type1, type2=None):
 class TypeChecker(NodeVisitor):
 
     def __init__(self):
-        self.symbol_table = st.SymbolTable()
+        self.symbol_table = SymbolTable()
         self.errors = []
 
     def add_error(self, message, line_no):
@@ -54,7 +54,7 @@ class TypeChecker(NodeVisitor):
             return self.symbol_table.get(name)
         except UndeclaredVariableError:
             self.add_error(f"Undeclared variable {name}", line_no)
-            return st.VariableSymbol(name, UndefinedType())
+            return VariableSymbol(name, UndefinedType())
 
     def print_errors(self):
         for error, line in self.errors:
@@ -69,7 +69,6 @@ class TypeChecker(NodeVisitor):
             self.visit(line)
 
     def visit_FunctionCall(self, node):
-        
         arg_type = self.visit(node.arg)
         if not isinstance(arg_type, IntType):
             self.add_error(f"Argument of a {node.name} function has to be of type int, provided {arg_type}", node.line_no)
@@ -81,7 +80,6 @@ class TypeChecker(NodeVisitor):
     def visit_UnaryExpr(self, node):
         arg_type = self.visit(node.arg)
 
-        
         if node.op == "MINUS":
             if isinstance(arg_type, StringType):
                 self.add_error(f"Argument of negation can not be type str", node.line_no)
@@ -166,7 +164,13 @@ class TypeChecker(NodeVisitor):
         return StringType()
     
     def visit_Vector(self, node):
-        return
+        first_element_type = self.visit(node.values[0])
+        for val in node.values:
+                element_type = self.visit(val)
+                if not isinstance(element_type, type(first_element_type)):
+                    self.add_error("All elements of the vector must be of the same type", node.line_no)
+                    return UndefinedType()
+        return MatrixType(1, len(node.values), first_element_type)
 
     def visit_Matrix(self, node):
         row_length = len(node.rows[0].values)
@@ -199,12 +203,11 @@ class TypeChecker(NodeVisitor):
                 stored_type = self.visit(node.variable)
                 if not isinstance(value_type, type(stored_type)):
                     self.add_error("Value is of different type than matrix", node.line_no)
-                
                 return
 
             self.symbol_table.put(node.variable.name, value_type)
 
-        elif node.op == "+=" or node.op == "-=" or node.op == "*=" or node.op == "*=":
+        elif node.op == "+=" or node.op == "-=" or node.op == "*=" or node.op == "/=":
             variable_type = self.visit(node.variable)
             
             if not isinstance(variable_type, NumericType):
