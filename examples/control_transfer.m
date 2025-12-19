@@ -1,5 +1,4 @@
-
-x=0;
+ 
 
 
 continue;

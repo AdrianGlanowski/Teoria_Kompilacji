@@ -93,9 +93,9 @@ class TypeChecker(NodeVisitor):
                 self.add_error(f"Argument of transposition has to be matrix", node.line_no)
                 return UndefinedType()
 
-            arg_type.shape = (arg_type.shape[1], arg_type.shape[0]) 
+            # arg_type.shape = (arg_type.shape[1], arg_type.shape[0]) 
        
-            return arg_type
+            return MatrixType((arg_type.shape[1], arg_type.shape[0]), arg_type.stored_type)
     
 
 
@@ -105,6 +105,7 @@ class TypeChecker(NodeVisitor):
 
         if node.op == "*":
             if check_both_types(type_left, type_right, MatrixType):
+                print(type_left.shape, type_right.shape)
                 if type_left.shape[1] != type_right.shape[0]:
                     self.add_error("Number of columns in the first matrix does not equal the number of rows in the second matrix", node.line_no)
                     return UndefinedType()
