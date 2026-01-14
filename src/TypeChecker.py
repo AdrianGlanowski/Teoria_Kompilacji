@@ -116,6 +116,9 @@ class TypeChecker(NodeVisitor):
             if check_both_types(type_left, type_right, NumericType):
                 return FloatType()
             
+            self.add_error(f"Unsupported operand types for /: {type_left} and {type_right}", node.line_no)
+            return UndefinedType()
+            
         if node.op in ['+', '-']:
             if check_both_types(type_left, type_right, IntType):
                 return IntType()

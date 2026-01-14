@@ -178,13 +178,10 @@ class Interpreter(object):
 
         self.memory.pop()
         
-
-    #TODO add Exception handling in loops
     @when(AST.BreakStatement)
     def visit(self, node):
         raise BreakException
     
-    #TODO add Exception handling in loops
     @when(AST.ContinueStatement)
     def visit(self, node):
         raise ContinueException
