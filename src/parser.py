@@ -4,27 +4,12 @@ from scanner import Scanner
 from errors import ParserError
 import AST
 
-# wyrażenia binarne,
-# wyrażenia relacyjne,
-# instrukcje przypisania,
-# instrukcje warunkowe if-else,
-# pętle: while oraz for,
-# instrukcje break, continue oraz return,
-# instrukcje print,
-# instrukcje złożone,
-# tablice oraz ich zakresy.
-
-
 class Mparser(Parser):
 
     tokens = Scanner.tokens
 
     debugfile = "parser.out"
 
-    # Zadanie polega na stworzeniu parsera języka do operacji macierzowych.
-
-    # tablice i macierze oraz ich indeksy (ewentualnie zakresy).
-    # customowe bledy w parsingu
     precedence = (
         ("nonassoc", "IFX"),
         ("nonassoc", "ELSE"),
@@ -192,10 +177,6 @@ class Mparser(Parser):
     @_("matrix_reference")
     def expr(self, p):
         return p.matrix_reference
-
-    # @_('var "\'" ')
-    # def expr(self, p):
-    #     return AST.UnaryExpr(p.lineno, p[1], p.var)
 
     @_("INTNUM")
     def expr(self, p):

@@ -1,8 +1,5 @@
 #!/usr/bin/python
-
-
 from errors import UndeclaredVariableError
-
 
 class VariableSymbol:
     def __init__(self, name, type):
@@ -29,12 +26,9 @@ class Scope:
         
         return self.parent.get(name)
          
-
     def get_parent(self):
         return self.parent
     
-
-
 class SymbolTable:
     def __init__(self):
         self.global_scope = Scope(None, 0)

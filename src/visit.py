@@ -2,13 +2,11 @@ import inspect
 
 __all__ = ['on', 'when']
 
-
 def on(param_name):
     def f(fn):
         dispatcher = Dispatcher(param_name, fn)
         return dispatcher
     return f
-
 
 def when(param_type):
     def f(fn):
@@ -24,7 +22,6 @@ def when(param_type):
         ff.dispatcher = dispatcher
         return ff
     return f
-
 
 class Dispatcher(object):
     def __init__(self, param_name, fn):

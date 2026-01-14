@@ -16,7 +16,6 @@ class TreePrinter:
         else:
             print(f"{prefix}None")
 
-
     @addToClass(AST.Program)
     def printTree(self, indent=0):
         for line in self.lines:
@@ -142,10 +141,3 @@ class TreePrinter:
         print("|  " * indent + f"{self.op}")
         TreePrinter.safePrintTree(self.left, indent + 1)
         TreePrinter.safePrintTree(self.right, indent + 1)
-
-    # @addToClass(AST.Error)
-    # def printTree(self, indent=0):
-    #     pass    
-    #     # fill in the body
-
-

@@ -9,7 +9,6 @@ class FloatType(NumericType):
     def __str__(self):
         return "FloatType"
 
-
 class MatrixType:
     def __init__(self, shape, stored_type):
         self.shape = shape

@@ -62,11 +62,15 @@ class Interpreter(object):
     def visit(self, node):
         value = self.visit(node.arg)
         return -value if node.op == "MINUS" else value.T
-
-
-
-
-
+    
+    @when(AST.BinaryExpr)
+    def visit(self, node):
+        value_left = self.visit(node.left)
+        op = self.operations[node.op[0:]]
+        value_right = self.visit(node.right)
+        
+        return op(value_left, value_right)
+    
     @when(AST.IntNum)
     def visit(self, node):
         return node.value
@@ -122,20 +126,25 @@ class Interpreter(object):
             return
         if node.else_branch != None:
             self.visit(node.else_branch)
-
-
-    @when(AST.BinaryExpr)
-    def visit(self, node):
-        value_left = self.visit(node.left)
-        op = self.operations[node.op[0:]]
-        value_right = self.visit(node.right)
-        
-        return op(value_left, value_right)
     
+    @when(AST.WhileStatement)
+    def visit(self, node):
+        pass
+
+    @when(AST.Range)
+    def visit(self, node):
+        pass
+
+    @when(AST.ForStatement)
+    def visit(self, node):
+        pass    
+
+    #TODO add Exception handling in loops
     @when(AST.BreakStatement)
     def visit(self, node):
         raise BreakException
     
+    #TODO add Exception handling in loops
     @when(AST.ContinueStatement)
     def visit(self, node):
         raise ContinueException
@@ -157,8 +166,6 @@ class Interpreter(object):
         arg2 = self.visit(node.reffs.values[1])
 
         return refference[arg1][arg2]
-
-
 
     @when(AST.Condition)
     def visit(self, node):

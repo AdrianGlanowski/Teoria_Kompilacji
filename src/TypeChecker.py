@@ -5,26 +5,11 @@ from errors import UndeclaredVariableError
 from custom_types import MatrixType, IntType, FloatType, StringType, UndefinedType, NumericType
 
 class NodeVisitor(object):
-
     def visit(self, node):
         method = 'visit_' + node.__class__.__name__
         print(f"{node.line_no}: visiting {method}")
         visitor = getattr(self, method, None)
         return visitor(node)
-
-    # def generic_visit(self, node):        
-    #     if isinstance(node, list):
-    #         for elem in node:
-    #             self.visit(elem)
-    #     else:
-    #         for child in node.children:
-    #             if isinstance(child, list):
-    #                 for item in child:
-    #                     if isinstance(item, AST.Node):
-    #                         self.visit(item)
-    #             elif isinstance(child, AST.Node):
-    #                 self.visit(child)
-
 
 def check_both_types(type_left, type_right, type1, type2=None):
     """
@@ -39,9 +24,7 @@ def check_both_types(type_left, type_right, type1, type2=None):
         return True
     return False
 
-
 class TypeChecker(NodeVisitor):
-
     def __init__(self):
         self.symbol_table = SymbolTable()
         self.errors = []
@@ -95,8 +78,6 @@ class TypeChecker(NodeVisitor):
        
             return arg_type
     
-
-
     def visit_BinaryExpr(self, node):
         type_left = self.visit(node.left)
         type_right = self.visit(node.right)
@@ -216,7 +197,7 @@ class TypeChecker(NodeVisitor):
             if not isinstance(value_type, NumericType):
                 self.add_error(f"Right side has to be of numeric type to use {node.op}, provided {value_type}", node.line_no)
 
-        
+
     def visit_IfStatement(self, node):
         self.visit(node.condition)
         self.visit(node.then_branch)

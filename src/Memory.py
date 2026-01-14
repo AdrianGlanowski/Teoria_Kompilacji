@@ -32,8 +32,6 @@ class MemoryStack:
     def get(self, name): # gets from memory stack current value of variable <name>
         return self.current_memory.get(name)
 
-    # def insert(self, name, value): # inserts into memory stack variable <name> with value <value>
-
     def put(self, name, value): # sets variable <name> to value <value>
         self.current_memory.put(name, value)
 
