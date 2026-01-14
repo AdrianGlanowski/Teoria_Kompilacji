@@ -66,7 +66,7 @@ class Interpreter(object):
     @when(AST.BinaryExpr)
     def visit(self, node):
         value_left = self.visit(node.left)
-        op = self.operations[node.op[0:]]
+        op = self.operations[node.op]
         value_right = self.visit(node.right)
         
         return op(value_left, value_right)

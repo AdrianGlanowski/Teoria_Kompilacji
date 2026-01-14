@@ -7,7 +7,6 @@ class VariableSymbol:
         self.type = type # MatrixType, IntType, FloatType, String
 
 class Scope:
-
     def __init__(self, parent, level):
         self.parent = parent
         self.level = level

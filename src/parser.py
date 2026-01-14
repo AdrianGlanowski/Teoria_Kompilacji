@@ -84,9 +84,9 @@ class Mparser(Parser):
     def print_arg(self, p):
         return [p.expr]
 
-    @_("STRING")
-    def print_arg(self, p):
-        return [AST.String(p.lineno, p[0])]
+    # @_("STRING")
+    # def print_arg(self, p):
+    #     return [AST.String(p.lineno, p[0])]
 
     # ---------------------------
     # assignments
@@ -99,10 +99,6 @@ class Mparser(Parser):
     )
     def assignment(self, p):
         return AST.Assignment(p.lineno, p[1], p.var, p.expr)
-
-    @_('var "=" STRING')
-    def assignment(self, p):
-        return AST.Assignment(p.lineno, p[1], p.var, AST.String(p.lineno, p[2]))
 
     @_('matrix_reference "=" expr')
     def assignment(self, p):
@@ -185,6 +181,11 @@ class Mparser(Parser):
     @_("FLOATNUM")
     def expr(self, p):
         return AST.FloatNum(p.lineno, p[0])
+    
+    @_("STRING")
+    def expr(self, p):
+        #slicing so the quotation isn't part of the string, preventing e.g. ""str""
+        return AST.String(p.lineno, p[0][1:-1])
     
     @_('expr "\'"')
     def expr(self, p):

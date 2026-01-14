@@ -101,6 +101,10 @@ class TypeChecker(NodeVisitor):
             if check_both_types(type_left, type_right, NumericType):
                 return FloatType()
             
+            if check_both_types(type_left, type_right, IntType, StringType) \
+                or check_both_types(type_left, type_right, StringType, IntType):
+                return StringType()
+            
             self.add_error(f"Unsupported operand types for *: {type_left} and {type_right}", node.line_no)
             return UndefinedType()
 
