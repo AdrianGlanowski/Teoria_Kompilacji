@@ -7,6 +7,7 @@ class Memory:
         self.level = level
 
         self.variables = dict()
+
     def has_key(self, name):  # variable name
         return name in self.variables
 
@@ -18,6 +19,8 @@ class Memory:
 
     def put(self, name, value):  # puts into memory current value of variable <name>
         self.variables[name] = value
+        if self.parent != None:
+            self.parent.variables[name] = value
 
     def get_parent(self):
         return self.parent
