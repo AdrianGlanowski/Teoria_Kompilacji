@@ -135,7 +135,7 @@ class Interpreter(object):
     @when(AST.WhileStatement)
     def visit(self, node):
         self.memory.push()
-        while (self.visit(node.condition)):
+        while self.visit(node.condition):
             #execute code
             try:
                 self.visit(node.body)  
@@ -146,8 +146,8 @@ class Interpreter(object):
                 print("\33[35mContinue happened\033[0m")
                 continue
             except ReturnValueException as exception:
-                print(f"\33[35mFor some reason return({exception.value}) happened\033[0m")
-                continue
+                print(f"\33[35mReturn({exception.value}) happened\033[0m")
+                return exception.value
             
         self.memory.pop()
 
@@ -173,8 +173,8 @@ class Interpreter(object):
                 print("\33[35mContinue happened\033[0m")
                 continue
             except ReturnValueException as exception:
-                print(f"\33[35mFor some reason return({exception.value}) happened\033[0m")
-                continue
+                print(f"\33[35mReturn({exception.value}) happened\033[0m")
+                return exception.value
 
         self.memory.pop()
         

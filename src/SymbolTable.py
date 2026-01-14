@@ -16,7 +16,6 @@ class Scope:
         self.symbols[name] = VariableSymbol(name, type)
     
     def get(self, name):
-
         if name in self.symbols:
             return self.symbols[name]
         

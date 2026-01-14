@@ -277,10 +277,9 @@ class TypeChecker(NodeVisitor):
         right_type = self.visit(node.right)
         
         #comparable
-        if node.op == "EQ" or node.op == "NEQ":
-            if (type(left_type) == type(right_type)) or \
-                check_both_types(left_type, right_type, NumericType):
-
+        if node.op == "==" or node.op == "!=":
+            if check_both_types(left_type, right_type, NumericType) or \
+                check_both_types(left_type, right_type, StringType):
                 return
             
             self.add_error(f"Cannot compare {left_type} and {right_type}", node.line_no)

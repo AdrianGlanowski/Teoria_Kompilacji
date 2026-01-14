@@ -22,6 +22,22 @@ class Memory:
         if self.parent != None:
             self.parent.variables[name] = value
 
+        scope = self.search(name)
+        if scope:
+            scope.variables[name] = value
+        else:
+            self.variables[name] = value
+
+    #searches for earliest instance of a variable
+    def search(self, name):
+        if self is None:
+            return None
+
+        if name in self.variables:
+            return self
+        
+        return self.parent.search(name)
+
     def get_parent(self):
         return self.parent
 
