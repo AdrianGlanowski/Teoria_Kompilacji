@@ -41,10 +41,11 @@ if __name__ == '__main__':
         typeChecker.visit(ast)   # or alternatively ast.accept(typeChecker)
     finally:
         typeChecker.print_errors()
-        exit(1)
+        if len(typeChecker.errors) > 0:
+            exit(1)
 
     # Below code shows how to use visitor
-    interpreter = Interpreter()
+    interpreter = Interpreter(True)
     interpreter.visit(ast)
     
     # in future

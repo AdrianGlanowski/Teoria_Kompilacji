@@ -5,13 +5,12 @@ class Memory:
     def __init__(self, parent, level): # memory name
         self.parent = parent
         self.level = level
-        self.variables = dict()
 
+        self.variables = dict()
     def has_key(self, name):  # variable name
         return name in self.variables
 
     def get(self, name):  # gets from memory current value of variable <name>
-        
         if name in self.variables:
             return self.variables[name]
         
@@ -35,7 +34,7 @@ class MemoryStack:
     def put(self, name, value): # sets variable <name> to value <value>
         self.current_memory.put(name, value)
 
-    def push(self, memory): # pushes memory <memory> onto the stack
+    def push(self): # pushes memory <memory> onto the stack
         self.current_memory = Memory(self.current_memory, self.current_memory.level+1)
 
     def pop(self): # pops the top memory from the stack

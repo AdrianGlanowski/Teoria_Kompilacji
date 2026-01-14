@@ -11,7 +11,7 @@ import numpy as np
 sys.setrecursionlimit(10000)
 
 class Interpreter(object):
-    def __init__(self):
+    def __init__(self, debug = False):
         self.memory = MemoryStack()
         self.operations = {
             "+": operator.add,
@@ -36,8 +36,8 @@ class Interpreter(object):
             "ones": lambda x: np.ones((x, x)),
             "eye": lambda x: np.eye(x)
         }
-
-
+        self.debug = debug
+    
     @on('node')
     def visit(self, node):
         pass
@@ -46,7 +46,7 @@ class Interpreter(object):
     def visit(self, node):
         for line in node.lines:
             self.visit(line)
-
+            
     @when(AST.Block)
     def visit(self, node):
         for line in node.lines:
@@ -110,34 +110,74 @@ class Interpreter(object):
 
                 matrix[arg1][arg2] = value
                 self.memory.put(node.variable.variable.name, matrix)
+                self.memory_dump(node)
+
                 return
 
             self.memory.put(node.variable.name, value)
+            self.memory_dump(node)
             return
         else:
             op = self.operations[node.op[0]]
-            self.memory.put(op(self.memory.get(node.variable.name), value))
+            variable = node.variable.name
+            self.memory.put(variable, op(self.memory.get(variable), value))
+            self.memory_dump(node)
+
     
     @when(AST.IfStatement)
     def visit(self, node):
         condition = self.visit(node.condition)
         if condition:
             self.visit(node.then_branch)
-            return
-        if node.else_branch != None:
+        elif node.else_branch != None:
             self.visit(node.else_branch)
     
     @when(AST.WhileStatement)
     def visit(self, node):
-        pass
+        self.memory.push()
+        while (self.visit(node.condition)):
+            #execute code
+            try:
+                self.visit(node.body)  
+            except BreakException:
+                print("\33[35mBreak happened\033[0m")
+                break
+            except ContinueException:
+                print("\33[35mContinue happened\033[0m")
+                continue
+            except ReturnValueException as exception:
+                print(f"\33[35mFor some reason return({exception.value}) happened\033[0m")
+                continue
+            
+        self.memory.pop()
 
     @when(AST.Range)
     def visit(self, node):
-        pass
+        return (self.visit(node.start), self.visit(node.end))
 
     @when(AST.ForStatement)
     def visit(self, node):
-        pass    
+        self.memory.push()
+        for i in range(*self.visit(node.range)):
+            #add/update variable
+            self.memory.put(node.variable.name, i)
+            self.memory_dump(node)
+
+            #execute code
+            try:
+                self.visit(node.body)  
+            except BreakException:
+                print("\33[35mBreak happened\033[0m")
+                break
+            except ContinueException:
+                print("\33[35mContinue happened\033[0m")
+                continue
+            except ReturnValueException as exception:
+                print(f"\33[35mFor some reason return({exception.value}) happened\033[0m")
+                continue
+
+        self.memory.pop()
+        
 
     #TODO add Exception handling in loops
     @when(AST.BreakStatement)
@@ -156,8 +196,10 @@ class Interpreter(object):
 
     @when(AST.PrintStatement)
     def visit(self, node):
+        print_args = []
         for element in node.values:
-            self.visit(element)
+            print_args.append(self.visit(element))
+        print(*print_args)
 
     @when(AST.MatrixRefference)
     def visit(self, node):
@@ -175,7 +217,11 @@ class Interpreter(object):
        
         return op(value_left, value_right)
             
-        
+    def memory_dump(self, node):
+        if self.debug:
+            print(f"\33[33mMemory state for line {node.line_no}: ", self.memory.current_memory.variables, "\033[0m\n")
+        return
+
         
 
 

@@ -7,7 +7,6 @@ from custom_types import MatrixType, IntType, FloatType, StringType, UndefinedTy
 class NodeVisitor(object):
     def visit(self, node):
         method = 'visit_' + node.__class__.__name__
-        print(f"{node.line_no}: visiting {method}")
         visitor = getattr(self, method, None)
         return visitor(node)
 
@@ -218,14 +217,12 @@ class TypeChecker(NodeVisitor):
 
     def visit_ForStatement(self, node):
         self.symbol_table.push_scope()
-        print("\33[33mentering into: ", self.symbol_table.current_scope.level, "\033[0m")
         self.symbol_table.put(node.variable.name, IntType())
+
         self.visit(node.range)
         self.visit(node.body)
-        
-        print("\33[35mdeleting variables: ", self.symbol_table.current_scope.symbols, "\033[0m")
+
         self.symbol_table.pop_scope()
-        print("\33[33mexiting into: ", self.symbol_table.current_scope.level, "\033[0m")
 
     def visit_BreakStatement(self, node):
         if self.symbol_table.current_scope.level == 0:
