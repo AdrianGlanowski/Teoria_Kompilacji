@@ -19,7 +19,6 @@ class TreePrinter:
         else:
             print(f"{prefix}None")
 
-
     @addToClass(AST.Program)
     def printTree(self, indent=0):
         for line in self.lines:

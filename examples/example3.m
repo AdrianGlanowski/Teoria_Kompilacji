@@ -1,6 +1,6 @@
 # control flow instruction
 
-N = 10;
+N = 4;
 M = 20;
 
 X = zeros(7);
@@ -32,24 +32,18 @@ while(k>10)
     k = k - 1;
 
 while(k>0) {
-    k = k - 1;
-}
-
-
-
-while(k>0) {
     if(k<5)
-        i = 1;
-    else if(k<10)
-        i = 2;   
-    else
         i = 3;
+    else if(k<10)
+        i = 4;   
+    else
+        i = 5;
     
     k = k - 1;
 }
 
 
-for i = 1:N
+for i = 4:N
   for j = i:M
     print i, j;
 
@@ -61,5 +55,5 @@ for i = 1:N {
     else if(i<=N/4)
         continue;
     else if(i<=N/2)
-        return;
+        return 7;
 }

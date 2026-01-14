@@ -4,27 +4,12 @@ from scanner import Scanner
 from errors import ParserError
 import AST
 
-# wyrażenia binarne,
-# wyrażenia relacyjne,
-# instrukcje przypisania,
-# instrukcje warunkowe if-else,
-# pętle: while oraz for,
-# instrukcje break, continue oraz return,
-# instrukcje print,
-# instrukcje złożone,
-# tablice oraz ich zakresy.
-
-
 class Mparser(Parser):
 
     tokens = Scanner.tokens
 
     debugfile = "parser.out"
 
-    # Zadanie polega na stworzeniu parsera języka do operacji macierzowych.
-
-    # tablice i macierze oraz ich indeksy (ewentualnie zakresy).
-    # customowe bledy w parsingu
     precedence = (
         ("nonassoc", "IFX"),
         ("nonassoc", "ELSE"),
@@ -99,9 +84,9 @@ class Mparser(Parser):
     def print_arg(self, p):
         return [p.expr]
 
-    @_("STRING")
-    def print_arg(self, p):
-        return [AST.String(p.lineno, p[0])]
+    # @_("STRING")
+    # def print_arg(self, p):
+    #     return [AST.String(p.lineno, p[0])]
 
     # ---------------------------
     # assignments
@@ -114,10 +99,6 @@ class Mparser(Parser):
     )
     def assignment(self, p):
         return AST.Assignment(p.lineno, p[1], p.var, p.expr)
-
-    @_('var "=" STRING')
-    def assignment(self, p):
-        return AST.Assignment(p.lineno, p[1], p.var, AST.String(p.lineno, p[2]))
 
     @_('matrix_reference "=" expr')
     def assignment(self, p):
@@ -193,10 +174,6 @@ class Mparser(Parser):
     def expr(self, p):
         return p.matrix_reference
 
-    # @_('var "\'" ')
-    # def expr(self, p):
-    #     return AST.UnaryExpr(p.lineno, p[1], p.var)
-
     @_("INTNUM")
     def expr(self, p):
         return AST.IntNum(p.lineno, p[0])
@@ -204,6 +181,11 @@ class Mparser(Parser):
     @_("FLOATNUM")
     def expr(self, p):
         return AST.FloatNum(p.lineno, p[0])
+    
+    @_("STRING")
+    def expr(self, p):
+        #slicing so the quotation isn't part of the string, preventing e.g. ""str""
+        return AST.String(p.lineno, p[0][1:-1])
     
     @_('expr "\'"')
     def expr(self, p):

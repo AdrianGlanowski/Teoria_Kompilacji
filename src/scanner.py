@@ -4,7 +4,6 @@ from sly import Lexer
 
 
 class Scanner(Lexer):
-
     tokens = {
             DOT_ADD, DOT_SUB, DOT_MUL, DOT_DIV,
             EQ, NEQ, GTE, LTE,
@@ -42,7 +41,6 @@ class Scanner(Lexer):
     INTNUM = r'(0|[1-9]\d*)((E|e)\+?\d+)?'   
     STRING = r'\"[^"\n]*\"|\'[^\'\n]*\''
     
-
     #keywords
     ID['if'] = IF
     ID['else'] = ELSE

@@ -1,30 +1,14 @@
 #!/usr/bin/python
 import AST
-import SymbolTable as st
+from SymbolTable import SymbolTable, VariableSymbol
 from errors import UndeclaredVariableError
 from custom_types import MatrixType, IntType, FloatType, StringType, UndefinedType, NumericType
 
 class NodeVisitor(object):
-
     def visit(self, node):
         method = 'visit_' + node.__class__.__name__
-        print(f"{node.line_no}: visiting {method}")
         visitor = getattr(self, method, None)
         return visitor(node)
-
-    # def generic_visit(self, node):        
-    #     if isinstance(node, list):
-    #         for elem in node:
-    #             self.visit(elem)
-    #     else:
-    #         for child in node.children:
-    #             if isinstance(child, list):
-    #                 for item in child:
-    #                     if isinstance(item, AST.Node):
-    #                         self.visit(item)
-    #             elif isinstance(child, AST.Node):
-    #                 self.visit(child)
-
 
 def check_both_types(type_left, type_right, type1, type2=None):
     """
@@ -39,11 +23,9 @@ def check_both_types(type_left, type_right, type1, type2=None):
         return True
     return False
 
-
 class TypeChecker(NodeVisitor):
-
     def __init__(self):
-        self.symbol_table = st.SymbolTable()
+        self.symbol_table = SymbolTable()
         self.errors = []
 
     def add_error(self, message, line_no):
@@ -54,7 +36,7 @@ class TypeChecker(NodeVisitor):
             return self.symbol_table.get(name)
         except UndeclaredVariableError:
             self.add_error(f"Undeclared variable {name}", line_no)
-            return st.VariableSymbol(name, UndefinedType())
+            return VariableSymbol(name, UndefinedType())
 
     def print_errors(self):
         for error, line in self.errors:
@@ -69,7 +51,6 @@ class TypeChecker(NodeVisitor):
             self.visit(line)
 
     def visit_FunctionCall(self, node):
-        
         arg_type = self.visit(node.arg)
         if not isinstance(arg_type, IntType):
             self.add_error(f"Argument of a {node.name} function has to be of type int, provided {arg_type}", node.line_no)
@@ -81,7 +62,6 @@ class TypeChecker(NodeVisitor):
     def visit_UnaryExpr(self, node):
         arg_type = self.visit(node.arg)
 
-        
         if node.op == "MINUS":
             if isinstance(arg_type, StringType):
                 self.add_error(f"Argument of negation can not be type str", node.line_no)
@@ -97,8 +77,6 @@ class TypeChecker(NodeVisitor):
        
             return MatrixType((arg_type.shape[1], arg_type.shape[0]), arg_type.stored_type)
     
-
-
     def visit_BinaryExpr(self, node):
         type_left = self.visit(node.left)
         type_right = self.visit(node.right)
@@ -124,6 +102,10 @@ class TypeChecker(NodeVisitor):
             if check_both_types(type_left, type_right, NumericType):
                 return FloatType()
             
+            if check_both_types(type_left, type_right, IntType, StringType) \
+                or check_both_types(type_left, type_right, StringType, IntType):
+                return StringType()
+            
             self.add_error(f"Unsupported operand types for *: {type_left} and {type_right}", node.line_no)
             return UndefinedType()
 
@@ -134,6 +116,9 @@ class TypeChecker(NodeVisitor):
             
             if check_both_types(type_left, type_right, NumericType):
                 return FloatType()
+            
+            self.add_error(f"Unsupported operand types for /: {type_left} and {type_right}", node.line_no)
+            return UndefinedType()
             
         if node.op in ['+', '-']:
             if check_both_types(type_left, type_right, IntType):
@@ -167,7 +152,13 @@ class TypeChecker(NodeVisitor):
         return StringType()
     
     def visit_Vector(self, node):
-        return
+        first_element_type = self.visit(node.values[0])
+        for val in node.values:
+                element_type = self.visit(val)
+                if not isinstance(element_type, type(first_element_type)):
+                    self.add_error("All elements of the vector must be of the same type", node.line_no)
+                    return UndefinedType()
+        return MatrixType(1, len(node.values), first_element_type)
 
     def visit_Matrix(self, node):
         row_length = len(node.rows[0].values)
@@ -200,12 +191,11 @@ class TypeChecker(NodeVisitor):
                 stored_type = self.visit(node.variable)
                 if not isinstance(value_type, type(stored_type)):
                     self.add_error("Value is of different type than matrix", node.line_no)
-                
                 return
 
             self.symbol_table.put(node.variable.name, value_type)
 
-        elif node.op == "+=" or node.op == "-=" or node.op == "*=" or node.op == "*=":
+        elif node.op == "+=" or node.op == "-=" or node.op == "*=" or node.op == "/=":
             variable_type = self.visit(node.variable)
             
             if not isinstance(variable_type, NumericType):
@@ -214,7 +204,7 @@ class TypeChecker(NodeVisitor):
             if not isinstance(value_type, NumericType):
                 self.add_error(f"Right side has to be of numeric type to use {node.op}, provided {value_type}", node.line_no)
 
-        
+
     def visit_IfStatement(self, node):
         self.visit(node.condition)
         self.visit(node.then_branch)
@@ -235,14 +225,12 @@ class TypeChecker(NodeVisitor):
 
     def visit_ForStatement(self, node):
         self.symbol_table.push_scope()
-        print("\33[33mentering into: ", self.symbol_table.current_scope.level, "\033[0m")
         self.symbol_table.put(node.variable.name, IntType())
+
         self.visit(node.range)
         self.visit(node.body)
-        
-        print("\33[35mdeleting variables: ", self.symbol_table.current_scope.symbols, "\033[0m")
+
         self.symbol_table.pop_scope()
-        print("\33[33mexiting into: ", self.symbol_table.current_scope.level, "\033[0m")
 
     def visit_BreakStatement(self, node):
         if self.symbol_table.current_scope.level == 0:
@@ -289,10 +277,9 @@ class TypeChecker(NodeVisitor):
         right_type = self.visit(node.right)
         
         #comparable
-        if node.op == "EQ" or node.op == "NEQ":
-            if (type(left_type) == type(right_type)) or \
-                check_both_types(left_type, right_type, NumericType):
-
+        if node.op == "==" or node.op == "!=":
+            if check_both_types(left_type, right_type, NumericType) or \
+                check_both_types(left_type, right_type, StringType):
                 return
             
             self.add_error(f"Cannot compare {left_type} and {right_type}", node.line_no)
