@@ -68,6 +68,9 @@ class Interpreter(object):
         value_left = self.visit(node.left)
         op = self.operations[node.op]
         value_right = self.visit(node.right)
+
+        if isinstance(value_left, np.ndarray) or isinstance(value_right, np.ndarray):
+            op = np.matmul if node.op == "*" else op
         
         return op(value_left, value_right)
     
@@ -103,7 +106,7 @@ class Interpreter(object):
 
         if node.op == "=":
 
-            if isinstance(node.variable, AST.MatrixRefference):
+            if isinstance(node.variable, AST.MatrixRefference): # M = A * B;
                 matrix = self.memory.get(node.variable.variable.name)
                 arg1 = self.visit(node.variable.reffs.values[0])
                 arg2 = self.visit(node.variable.reffs.values[1])
@@ -119,8 +122,14 @@ class Interpreter(object):
             return
         else:
             op = self.operations[node.op[0]]
-            variable = node.variable.name
-            self.memory.put(variable, op(self.memory.get(variable), value))
+            var_name = node.variable.name
+            var = self.memory.get(var_name)
+            
+
+            if isinstance(var, np.ndarray) and isinstance(value, np.ndarray):
+                op = np.matmul if node.op[0] == "*" else op
+
+            self.memory.put(var_name, op(var, value))
             self.memory_dump(node)
 
     

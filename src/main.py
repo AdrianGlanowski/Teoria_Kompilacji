@@ -45,7 +45,7 @@ if __name__ == '__main__':
             exit(1)
 
     # Below code shows how to use visitor
-    interpreter = Interpreter(False)
+    interpreter = Interpreter(True)
     interpreter.visit(ast)
     
     # in future
