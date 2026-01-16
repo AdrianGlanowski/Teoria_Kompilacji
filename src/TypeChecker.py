@@ -83,7 +83,6 @@ class TypeChecker(NodeVisitor):
 
         if node.op == "*":
             if check_both_types(type_left, type_right, MatrixType):
-                print(type_left.shape, type_right.shape)
                 if type_left.shape[1] != type_right.shape[0]:
                     self.add_error("Number of columns in the first matrix does not equal the number of rows in the second matrix", node.line_no)
                     return UndefinedType()
@@ -197,13 +196,31 @@ class TypeChecker(NodeVisitor):
 
         elif node.op == "+=" or node.op == "-=" or node.op == "*=" or node.op == "/=":
             variable_type = self.visit(node.variable)
-            
-            if not isinstance(variable_type, NumericType):
-                self.add_error(f"Left side has to be of numeric type to use {node.op}, provided {variable_type}", node.line_no)
-            
-            if not isinstance(value_type, NumericType):
-                self.add_error(f"Right side has to be of numeric type to use {node.op}, provided {value_type}", node.line_no)
 
+            # sprawdzenie czy obie strony to typy liczbowe
+            if isinstance(variable_type, NumericType) and isinstance(value_type, NumericType):
+                return
+            
+            if isinstance(variable_type, MatrixType):
+                if isinstance(value_type, NumericType):
+                    return # wszystko ok
+                
+                # Macierz op Macierz
+                if isinstance(value_type, MatrixType):
+                    if node.op in ["+=", "-="]:
+                        if variable_type.shape != value_type.shape:
+                            self.add_error(f"Incompatible shapes for {node.op}: {variable_type.shape} and {value_type.shape}", node.line_no)
+                    elif node.op == "*=":
+                        if variable_type.shape[1] != value_type.shape[0]:
+                            self.add_error(f"Incompatible shapes for *=: {variable_type.shape} and {value_type.shape}", node.line_no)
+                        
+                        # mnożenie macierzy zmienia kształt lewej strony na (rows_A, cols_B)
+                        self.symbol_table.put(node.variable.name, MatrixType((variable_type.shape[0], value_type.shape[1]), variable_type.stored_type))
+                else:
+                    self.add_error(f"Unsupported operand types for {node.op}: {variable_type} and {value_type}", node.line_no)
+
+            else:
+                self.add_error(f"Left side of {node.op} must be Numeric or Matrix, provided {variable_type}", node.line_no)
 
     def visit_IfStatement(self, node):
         self.visit(node.condition)
@@ -266,9 +283,16 @@ class TypeChecker(NodeVisitor):
 
             if not check_both_types(type1, type2, IntType):
                 self.add_error("Matrix refference indices have to be of type int", node.line_no)
+                return
+                
+            if not isinstance(node.reffs.values[0], AST.Id):
+                if node.reffs.values[0].value >= symbol.type.shape[0]:
+                    self.add_error("Matrix refference out of bounds", node.line_no)
+
+            if not isinstance(node.reffs.values[1], AST.Id):
+                if node.reffs.values[1].value >= symbol.type.shape[1]:
+                    self.add_error("Matrix refference out of bounds", node.line_no)
             
-            if node.reffs.values[0].value >= symbol.type.shape[0] or node.reffs.values[1].value >= symbol.type.shape[1]:
-                self.add_error("Matrix refference out of bounds", node.line_no)
             
         return symbol.type.stored_type
     

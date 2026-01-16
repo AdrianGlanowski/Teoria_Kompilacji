@@ -1,4 +1,3 @@
-
 import sys
 from scanner import Scanner
 from parser import Mparser
@@ -6,7 +5,6 @@ from errors import ParserError
 from TreePrinter import TreePrinter
 from TypeChecker import TypeChecker
 from Interpreter import Interpreter
-
 
 
 if __name__ == '__main__':
