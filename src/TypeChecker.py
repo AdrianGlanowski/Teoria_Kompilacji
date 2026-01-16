@@ -83,7 +83,6 @@ class TypeChecker(NodeVisitor):
 
         if node.op == "*":
             if check_both_types(type_left, type_right, MatrixType):
-                print(type_left.shape, type_right.shape)
                 if type_left.shape[1] != type_right.shape[0]:
                     self.add_error("Number of columns in the first matrix does not equal the number of rows in the second matrix", node.line_no)
                     return UndefinedType()
@@ -284,9 +283,16 @@ class TypeChecker(NodeVisitor):
 
             if not check_both_types(type1, type2, IntType):
                 self.add_error("Matrix refference indices have to be of type int", node.line_no)
+                return
+                
+            if not isinstance(node.reffs.values[0], AST.Id):
+                if node.reffs.values[0].value >= symbol.type.shape[0]:
+                    self.add_error("Matrix refference out of bounds", node.line_no)
+
+            if not isinstance(node.reffs.values[1], AST.Id):
+                if node.reffs.values[1].value >= symbol.type.shape[1]:
+                    self.add_error("Matrix refference out of bounds", node.line_no)
             
-            if node.reffs.values[0].value >= symbol.type.shape[0] or node.reffs.values[1].value >= symbol.type.shape[1]:
-                self.add_error("Matrix refference out of bounds", node.line_no)
             
         return symbol.type.stored_type
     
